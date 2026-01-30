@@ -15,6 +15,8 @@ struct MapView: View {
     @State private var selectedMember: UserProfile?
     @State private var showPrecisionInfo: Bool = false
     @State private var showSOSSheet: Bool = false
+    @State private var hasInitiallyLocated: Bool = false
+    @State private var isRefreshing: Bool = false
 
     // Task management to prevent memory leaks
     @State private var locationUpdateTask: Task<Void, Never>?
@@ -45,7 +47,9 @@ struct MapView: View {
                 locationManager: locationManager,
                 showPrecisionInfo: $showPrecisionInfo,
                 selectedMember: $selectedMember,
+                isRefreshing: $isRefreshing,
                 centerOnUser: centerOnUser,
+                refreshLocations: refreshLocations,
                 onSOSAlertTap: { alert in
                     // Center map on the SOS location
                     withAnimation {
@@ -60,11 +64,24 @@ struct MapView: View {
         .toolbar { toolbarContent }
         .onAppear {
             locationManager.requestPermission()
+            // Request "Always" permission for background features (geofencing, SOS)
+            locationManager.requestAlwaysPermission()
             startLocationUpdates()
             locationManager.syncGeofencesWithPlaces(firestoreService.places)
             // Start listening for SOS alerts
             if let circleId = firestoreService.currentCircleId {
                 sosService.listenToCircleAlerts(circleId: circleId)
+            }
+            // Auto-center on user's location at launch
+            centerOnUserIfNeeded()
+        }
+        .onChange(of: locationManager.currentLocation) { _, newLocation in
+            // Center map on first location received
+            if !hasInitiallyLocated, let location = newLocation {
+                withAnimation {
+                    region.center = location.coordinate
+                }
+                hasInitiallyLocated = true
             }
         }
         .onDisappear {
@@ -141,6 +158,30 @@ struct MapView: View {
         }
     }
 
+    private func centerOnUserIfNeeded() {
+        if !hasInitiallyLocated, let location = locationManager.currentLocation {
+            withAnimation {
+                region.center = location.coordinate
+            }
+            hasInitiallyLocated = true
+        }
+    }
+
+    private func refreshLocations() {
+        guard !isRefreshing else { return }
+        isRefreshing = true
+
+        // Re-switch to the current circle to trigger fresh data fetch
+        if let circleId = firestoreService.currentCircleId {
+            firestoreService.switchCircle(to: circleId)
+        }
+
+        // Show refreshing state briefly
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+            isRefreshing = false
+        }
+    }
+
     private func startLocationUpdates() {
         // Cancel any existing task to prevent duplicates
         locationUpdateTask?.cancel()
@@ -210,20 +251,26 @@ struct MapOverlayView: View {
     @StateObject private var sosService = SOSService.shared
     @Binding var showPrecisionInfo: Bool
     @Binding var selectedMember: UserProfile?
+    @Binding var isRefreshing: Bool
     @State private var showDebugPanel: Bool = false
     @State private var dismissedAlertIds: Set<String> = []
     let centerOnUser: () -> Void
+    let refreshLocations: () -> Void
     let onSOSAlertTap: ((SOSAlert) -> Void)?
 
     init(locationManager: PrecisionLocationManager,
          showPrecisionInfo: Binding<Bool>,
          selectedMember: Binding<UserProfile?>,
+         isRefreshing: Binding<Bool>,
          centerOnUser: @escaping () -> Void,
+         refreshLocations: @escaping () -> Void,
          onSOSAlertTap: ((SOSAlert) -> Void)? = nil) {
         self._locationManager = ObservedObject(wrappedValue: locationManager)
         self._showPrecisionInfo = showPrecisionInfo
         self._selectedMember = selectedMember
+        self._isRefreshing = isRefreshing
         self.centerOnUser = centerOnUser
+        self.refreshLocations = refreshLocations
         self.onSOSAlertTap = onSOSAlertTap
     }
 
@@ -315,12 +362,34 @@ struct MapOverlayView: View {
     private var locationButton: some View {
         HStack {
             Spacer()
-            Button(action: centerOnUser) {
-                Image(systemName: "location.fill")
-                    .padding()
+            VStack(spacing: 12) {
+                // Refresh button
+                Button(action: refreshLocations) {
+                    Group {
+                        if isRefreshing {
+                            ProgressView()
+                                .progressViewStyle(CircularProgressViewStyle())
+                        } else {
+                            Image(systemName: "arrow.clockwise")
+                        }
+                    }
+                    .frame(width: 24, height: 24)
+                    .padding(12)
                     .background(Color(.systemBackground))
                     .clipShape(Circle())
                     .shadow(radius: 4)
+                }
+                .disabled(isRefreshing)
+
+                // Center on user button
+                Button(action: centerOnUser) {
+                    Image(systemName: "location.fill")
+                        .frame(width: 24, height: 24)
+                        .padding(12)
+                        .background(Color(.systemBackground))
+                        .clipShape(Circle())
+                        .shadow(radius: 4)
+                }
             }
             .padding()
         }
