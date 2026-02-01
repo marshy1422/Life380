@@ -164,8 +164,10 @@ struct SettingsView: View {
                         Label("Send Feedback", systemImage: "bubble.left.fill")
                     }
 
-                    Link(destination: URL(string: "https://testflight.apple.com/join/XXXXXX")!) {
-                        Label("Invite Friends to Beta", systemImage: "person.badge.plus")
+                    if let testFlightURL = URL(string: "https://testflight.apple.com/join/Life380Beta") {
+                        Link(destination: testFlightURL) {
+                            Label("Invite Friends to Beta", systemImage: "person.badge.plus")
+                        }
                     }
                 }
 
@@ -420,18 +422,53 @@ struct JoinCircleView: View {
     @State private var inviteCode = ""
     @State private var isJoining = false
     @State private var errorMessage: String?
+    @State private var showSuccess = false
 
     var body: some View {
         Form {
-            Section("Invite Code") {
-                TextField("Enter 6-character code", text: $inviteCode)
+            Section {
+                TextField("XXXXXX", text: $inviteCode)
                     .textInputAutocapitalization(.characters)
+                    .font(.system(.title2, design: .monospaced))
+                    .multilineTextAlignment(.center)
+                    .onChange(of: inviteCode) { _, newValue in
+                        // Limit to 6 characters and uppercase
+                        let filtered = newValue.uppercased().filter { $0.isLetter || $0.isNumber }
+                        if filtered.count > 6 {
+                            inviteCode = String(filtered.prefix(6))
+                        } else {
+                            inviteCode = filtered
+                        }
+                    }
+            } header: {
+                Text("Invite Code")
+            } footer: {
+                if inviteCode.isEmpty {
+                    Text("Enter the 6-character code shared by a circle member")
+                } else if inviteCode.count < 6 {
+                    Text("\(6 - inviteCode.count) more characters needed")
+                }
             }
 
             if let error = errorMessage {
                 Section {
-                    Text(error)
-                        .foregroundColor(.red)
+                    HStack {
+                        Image(systemName: "exclamationmark.circle.fill")
+                            .foregroundColor(.red)
+                        Text(error)
+                            .foregroundColor(.red)
+                    }
+                }
+            }
+
+            if showSuccess {
+                Section {
+                    HStack {
+                        Image(systemName: "checkmark.circle.fill")
+                            .foregroundColor(.green)
+                        Text("Successfully joined circle!")
+                            .foregroundColor(.green)
+                    }
                 }
             }
 
@@ -441,6 +478,7 @@ struct JoinCircleView: View {
                         HStack {
                             Spacer()
                             ProgressView()
+                            Text("Joining...")
                             Spacer()
                         }
                     } else {
@@ -451,7 +489,7 @@ struct JoinCircleView: View {
                         }
                     }
                 }
-                .disabled(inviteCode.count < 6 || isJoining)
+                .disabled(inviteCode.count < 6 || isJoining || showSuccess)
             }
         }
         .navigationTitle("Join Circle")
@@ -460,10 +498,18 @@ struct JoinCircleView: View {
     private func joinCircle() {
         isJoining = true
         errorMessage = nil
+        showSuccess = false
 
         Task {
             do {
                 try await firestoreService.joinCircle(inviteCode: inviteCode)
+
+                // Show success message
+                showSuccess = true
+
+                // Wait briefly so user sees success
+                try await Task.sleep(nanoseconds: 1_500_000_000)
+
                 dismiss()
             } catch {
                 errorMessage = error.localizedDescription

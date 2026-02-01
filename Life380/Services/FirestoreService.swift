@@ -39,7 +39,8 @@ class FirestoreService: ObservableObject {
             longitude: 0,
             lastUpdated: Date(),
             batteryLevel: 100,
-            isLocationSharing: true
+            isLocationSharing: true,
+            circleIds: []  // Initialize with empty array
         )
 
         try await db.collection("users").document(userId).setData(profile.dictionary)
@@ -52,6 +53,9 @@ class FirestoreService: ObservableObject {
 
     func updateUserLocation(latitude: Double, longitude: Double, batteryLevel: Int, accuracy: Double? = nil, floor: Int? = nil) async {
         guard let userId = Auth.auth().currentUser?.uid else { return }
+
+        // CRITICAL: Respect user's location sharing preference
+        guard currentUserProfile?.isLocationSharing == true else { return }
 
         var updateData: [String: Any] = [
             "latitude": latitude,
@@ -138,16 +142,31 @@ class FirestoreService: ObservableObject {
 
     func joinCircle(inviteCode: String) async throws {
         guard let userId = Auth.auth().currentUser?.uid else {
-            throw NSError(domain: "Auth", code: -1, userInfo: [NSLocalizedDescriptionKey: "Not authenticated"])
+            throw CircleError.notAuthenticated
+        }
+
+        // Sanitize input
+        let cleanCode = inviteCode.trimmingCharacters(in: .whitespaces).uppercased()
+
+        guard cleanCode.count == 6 else {
+            throw CircleError.invalidInviteCode
         }
 
         let snapshot = try await db.collection("circles")
-            .whereField("inviteCode", isEqualTo: inviteCode.uppercased())
+            .whereField("inviteCode", isEqualTo: cleanCode)
             .getDocuments()
 
         guard let circleDoc = snapshot.documents.first else {
-            throw NSError(domain: "Circle", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid invite code"])
+            throw CircleError.invalidInviteCode
         }
+
+        // Check if user is already a member
+        if let memberIds = circleDoc.data()["memberIds"] as? [String],
+           memberIds.contains(userId) {
+            throw CircleError.alreadyMember
+        }
+
+        let circleId = circleDoc.documentID
 
         // Add user to circle
         try await circleDoc.reference.updateData([
@@ -156,8 +175,30 @@ class FirestoreService: ObservableObject {
 
         // Add circle to user
         try await db.collection("users").document(userId).updateData([
-            "circleIds": FieldValue.arrayUnion([circleDoc.documentID])
+            "circleIds": FieldValue.arrayUnion([circleId])
         ])
+    }
+
+    // MARK: - Circle Errors
+
+    enum CircleError: LocalizedError {
+        case notAuthenticated
+        case invalidInviteCode
+        case alreadyMember
+        case networkError
+
+        var errorDescription: String? {
+            switch self {
+            case .notAuthenticated:
+                return "You need to be signed in to join a circle"
+            case .invalidInviteCode:
+                return "Invalid invite code. Please check the code and try again."
+            case .alreadyMember:
+                return "You're already a member of this circle"
+            case .networkError:
+                return "Network error. Please check your connection and try again."
+            }
+        }
     }
 
     func leaveCircle(circleId: String) async throws {
@@ -312,8 +353,8 @@ class FirestoreService: ObservableObject {
     // MARK: - Helpers
 
     private func generateInviteCode() -> String {
-        let characters = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
-        return String((0..<6).map { _ in characters.randomElement()! })
+        let characters = Array("ABCDEFGHJKLMNPQRSTUVWXYZ23456789")
+        return String((0..<6).compactMap { _ in characters.randomElement() })
     }
 
     func removeAllListeners() {

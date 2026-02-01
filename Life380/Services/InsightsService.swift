@@ -230,13 +230,15 @@ class InsightsService: ObservableObject {
         let calendar = Calendar.current
         let today = calendar.startOfDay(for: Date())
 
-        if todaysSummary == nil || !calendar.isDate(todaysSummary!.date, inSameDayAs: today) {
+        if todaysSummary == nil || !calendar.isDate(todaysSummary?.date ?? Date.distantPast, inSameDayAs: today) {
             todaysSummary = DailyDwellSummary(userId: userId, date: today)
         }
 
-        let currentDuration = todaysSummary!.placeDurations[record.placeId] ?? 0
-        todaysSummary!.placeDurations[record.placeId] = currentDuration + record.duration
-        todaysSummary!.placeNames[record.placeId] = record.placeName
+        guard var summary = todaysSummary else { return }
+        let currentDuration = summary.placeDurations[record.placeId] ?? 0
+        summary.placeDurations[record.placeId] = currentDuration + record.duration
+        summary.placeNames[record.placeId] = record.placeName
+        todaysSummary = summary
     }
 
     private func updateCommuteStats(from fromId: String, fromName: String,

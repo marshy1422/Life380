@@ -16,6 +16,20 @@
     <string>$(EXECUTABLE_NAME)</string>
     <key>CFBundlePackageType</key>
     <string>APPL</string>
+
+    <!-- URL Schemes for Sign in with Apple -->
+    <key>CFBundleURLTypes</key>
+    <array>
+        <dict>
+            <key>CFBundleTypeRole</key>
+            <string>Editor</string>
+            <key>CFBundleURLSchemes</key>
+            <array>
+                <string>com.life380.app</string>
+            </array>
+        </dict>
+    </array>
+
     <key>LSRequiresIPhoneOS</key>
     <true/>
     <key>UILaunchScreen</key>

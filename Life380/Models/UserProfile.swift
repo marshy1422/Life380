@@ -13,7 +13,7 @@ struct UserProfile: Identifiable, Codable {
     var lastUpdated: Date
     var batteryLevel: Int
     var isLocationSharing: Bool
-    var circleIds: [String]?
+    var circleIds: [String]
     var horizontalAccuracy: Double?  // Precision tracking
     var floor: Int?                  // Floor level from barometer
 
@@ -106,9 +106,7 @@ struct UserProfile: Identifiable, Codable {
         if let photoURL = photoURL {
             dict["photoURL"] = photoURL
         }
-        if let circleIds = circleIds {
-            dict["circleIds"] = circleIds
-        }
+        dict["circleIds"] = circleIds
         if let horizontalAccuracy = horizontalAccuracy {
             dict["horizontalAccuracy"] = horizontalAccuracy
         }
@@ -118,7 +116,7 @@ struct UserProfile: Identifiable, Codable {
         return dict
     }
 
-    init(id: String, email: String, displayName: String, photoURL: String?, latitude: Double, longitude: Double, lastUpdated: Date, batteryLevel: Int, isLocationSharing: Bool, circleIds: [String]? = nil, horizontalAccuracy: Double? = nil, floor: Int? = nil) {
+    init(id: String, email: String, displayName: String, photoURL: String?, latitude: Double, longitude: Double, lastUpdated: Date, batteryLevel: Int, isLocationSharing: Bool, circleIds: [String] = [], horizontalAccuracy: Double? = nil, floor: Int? = nil) {
         self.id = id
         self.email = email
         self.displayName = displayName
@@ -152,7 +150,7 @@ struct UserProfile: Identifiable, Codable {
         self.longitude = longitude
         self.batteryLevel = batteryLevel
         self.isLocationSharing = isLocationSharing
-        self.circleIds = dictionary["circleIds"] as? [String]
+        self.circleIds = dictionary["circleIds"] as? [String] ?? []
         self.horizontalAccuracy = dictionary["horizontalAccuracy"] as? Double
         self.floor = dictionary["floor"] as? Int
 

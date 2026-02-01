@@ -44,6 +44,7 @@ class AuthenticationService: NSObject, ObservableObject {
                 email: email,
                 displayName: displayName
             )
+
         } catch {
             errorMessage = error.localizedDescription
         }
@@ -139,7 +140,7 @@ class AuthenticationService: NSObject, ObservableObject {
     func prepareSignInWithApple() -> String {
         let nonce = randomNonceString()
         currentNonce = nonce
-        return sha256(nonce)
+        return nonce  // Return RAW nonce - Apple's framework hashes it automatically
     }
 
     // MARK: - Account Deletion (Required by App Store)
@@ -191,17 +192,11 @@ class AuthenticationService: NSObject, ObservableObject {
         var randomBytes = [UInt8](repeating: 0, count: length)
         let errorCode = SecRandomCopyBytes(kSecRandomDefault, randomBytes.count, &randomBytes)
 
-        // Fallback to UUID-based generation if secure random fails (avoid crashing in production)
-        if errorCode != errSecSuccess {
-            #if DEBUG
-            print("SecRandomCopyBytes failed with OSStatus \(errorCode), using fallback")
-            #endif
-            // Use multiple UUIDs to reach desired length
-            var fallbackNonce = ""
-            while fallbackNonce.count < length {
-                fallbackNonce += UUID().uuidString.replacingOccurrences(of: "-", with: "")
-            }
-            return String(fallbackNonce.prefix(length))
+        // SECURITY: Fail securely - never use weak random for authentication
+        guard errorCode == errSecSuccess else {
+            // This should never happen on iOS, but if it does, we must not proceed
+            // with weak random data for security-critical nonce generation
+            fatalError("Failed to generate cryptographically secure random bytes. OSStatus: \(errorCode)")
         }
 
         let charset: [Character] = Array("0123456789ABCDEFGHIJKLMNOPQRSTUVXYZabcdefghijklmnopqrstuvwxyz-._")

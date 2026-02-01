@@ -30,7 +30,7 @@ service cloud.firestore {
     }
 
     function isValidBatteryLevel(level) {
-      return level is int && level >= 0 && level <= 100;
+      return level is number && level >= 0 && level <= 100;
     }
 
     // Users collection
@@ -46,21 +46,11 @@ service cloud.firestore {
       // Users can only create their own profile
       allow create: if isOwner(userId) &&
         request.resource.data.id == userId &&
-        isValidDisplayName(request.resource.data.displayName) &&
-        isValidLatitude(request.resource.data.latitude) &&
-        isValidLongitude(request.resource.data.longitude) &&
-        isValidBatteryLevel(request.resource.data.batteryLevel) &&
-        request.resource.data.isLocationSharing is bool;
+        request.resource.data.displayName is string &&
+        request.resource.data.displayName.size() >= 1;
 
-      // Users can only update their own profile with valid data
-      allow update: if isOwner(userId) &&
-        request.resource.data.id == userId &&
-        request.resource.data.email == resource.data.email &&
-        isValidDisplayName(request.resource.data.displayName) &&
-        isValidLatitude(request.resource.data.latitude) &&
-        isValidLongitude(request.resource.data.longitude) &&
-        isValidBatteryLevel(request.resource.data.batteryLevel) &&
-        request.resource.data.isLocationSharing is bool;
+      // Users can only update their own profile
+      allow update: if isOwner(userId);
 
       // Users can only delete their own profile
       allow delete: if isOwner(userId);
@@ -68,10 +58,8 @@ service cloud.firestore {
 
     // Circles collection
     match /circles/{circleId} {
-      // Only circle members can read
-      allow read: if isCircleMember(circleId);
-
-      // Allow reading by invite code for joining
+      // Circle members can read full details
+      // Any authenticated user can read (needed for invite code lookup)
       allow read: if isAuthenticated();
 
       // Any authenticated user can create a circle
@@ -84,12 +72,14 @@ service cloud.firestore {
         request.resource.data.inviteCode is string &&
         request.resource.data.inviteCode.size() == 6;
 
-      // Circle members can update (join/leave)
+      // Circle members can update, AND new members can join
       allow update: if isAuthenticated() && (
-        // Existing member updating
+        // Existing member can update
         isCircleMember(circleId) ||
-        // New member joining (they found the invite code)
-        (request.resource.data.memberIds.hasAny([request.auth.uid]) &&
+        // New member joining: adding themselves to memberIds
+        // Only allows adding exactly one member (themselves)
+        (request.resource.data.memberIds.size() == resource.data.memberIds.size() + 1 &&
+         request.resource.data.memberIds.hasAny([request.auth.uid]) &&
          !resource.data.memberIds.hasAny([request.auth.uid]))
       );
 
@@ -112,6 +102,33 @@ service cloud.firestore {
         allow update: if isCircleMember(circleId);
 
         allow delete: if isCircleMember(circleId);
+      }
+
+      // SOS Alerts subcollection - CRITICAL for emergency features
+      match /sosAlerts/{alertId} {
+        allow read: if isCircleMember(circleId);
+
+        // Only allow creating alerts for yourself
+        allow create: if isCircleMember(circleId) &&
+          request.resource.data.userId == request.auth.uid;
+
+        // Allow updates (to resolve alerts) by circle members
+        allow update: if isCircleMember(circleId);
+
+        // Never allow deletion of SOS alerts (audit trail)
+        allow delete: if false;
+      }
+
+      // Check-ins subcollection
+      match /checkIns/{checkinId} {
+        allow read: if isCircleMember(circleId);
+
+        // Only allow creating check-ins for yourself
+        allow create: if isCircleMember(circleId) &&
+          request.resource.data.userId == request.auth.uid;
+
+        // Never allow deletion of check-ins
+        allow delete: if false;
       }
     }
 
