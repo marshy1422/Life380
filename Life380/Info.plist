@@ -14,6 +14,16 @@
 				<string>com.life380.app</string>
 			</array>
 		</dict>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			<key>CFBundleURLName</key>
+			<string>Circle Invite</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>life380</string>
+			</array>
+		</dict>
 	</array>
 	<key>NSAppTransportSecurity</key>
 	<dict>

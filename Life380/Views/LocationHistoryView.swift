@@ -12,10 +12,10 @@ struct LocationHistoryView: View {
     @State private var locationHistory: [LocationHistoryEntry] = []
     @State private var isLoading = false
     @State private var selectedEntry: LocationHistoryEntry?
-    @State private var region = MKCoordinateRegion(
+    @State private var cameraPosition = MapCameraPosition.region(MKCoordinateRegion(
         center: CLLocationCoordinate2D(latitude: -33.8688, longitude: 151.2093),
         span: MKCoordinateSpan(latitudeDelta: 0.1, longitudeDelta: 0.1)
-    )
+    ))
 
     var body: some View {
         VStack(spacing: 0) {
@@ -31,12 +31,14 @@ struct LocationHistoryView: View {
             .background(Color(.systemBackground))
 
             // Map with route
-            Map(coordinateRegion: $region, annotationItems: locationHistory) { entry in
-                MapAnnotation(coordinate: entry.coordinate) {
-                    LocationHistoryPin(entry: entry, isSelected: selectedEntry?.id == entry.id)
-                        .onTapGesture {
-                            selectedEntry = entry
-                        }
+            Map(position: $cameraPosition) {
+                ForEach(locationHistory) { entry in
+                    Annotation(entry.placeName ?? "Location", coordinate: entry.coordinate) {
+                        LocationHistoryPin(entry: entry, isSelected: selectedEntry?.id == entry.id)
+                            .onTapGesture {
+                                selectEntry(entry)
+                            }
+                    }
                 }
             }
             .overlay(alignment: .bottom) {
@@ -121,7 +123,10 @@ struct LocationHistoryView: View {
 
                 // Center map on first entry
                 if let first = locationHistory.first {
-                    region.center = first.coordinate
+                    cameraPosition = .region(MKCoordinateRegion(
+                        center: first.coordinate,
+                        span: MKCoordinateSpan(latitudeDelta: 0.1, longitudeDelta: 0.1)
+                    ))
                 }
             }
         }
@@ -130,8 +135,10 @@ struct LocationHistoryView: View {
     private func selectEntry(_ entry: LocationHistoryEntry) {
         withAnimation {
             selectedEntry = entry
-            region.center = entry.coordinate
-            region.span = MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01)
+            cameraPosition = .region(MKCoordinateRegion(
+                center: entry.coordinate,
+                span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01)
+            ))
         }
     }
 

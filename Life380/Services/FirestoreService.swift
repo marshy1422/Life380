@@ -116,9 +116,9 @@ class FirestoreService: ObservableObject {
 
     // MARK: - Circles
 
-    func createCircle(name: String) async throws -> String {
+    func createCircle(name: String) async throws -> FamilyCircle {
         guard let userId = Auth.auth().currentUser?.uid else {
-            throw NSError(domain: "Auth", code: -1, userInfo: [NSLocalizedDescriptionKey: "Not authenticated"])
+            throw CircleError.notAuthenticated
         }
 
         let circleRef = db.collection("circles").document()
@@ -138,10 +138,13 @@ class FirestoreService: ObservableObject {
             "circleIds": FieldValue.arrayUnion([circleRef.documentID])
         ])
 
-        return circleRef.documentID
+        // Switch to the new circle
+        switchCircle(to: circle.id)
+
+        return circle
     }
 
-    func joinCircle(inviteCode: String) async throws {
+    func joinCircle(inviteCode: String) async throws -> FamilyCircle {
         guard let userId = Auth.auth().currentUser?.uid else {
             throw CircleError.notAuthenticated
         }
@@ -157,17 +160,15 @@ class FirestoreService: ObservableObject {
             .whereField("inviteCode", isEqualTo: cleanCode)
             .getDocuments()
 
-        guard let circleDoc = snapshot.documents.first else {
+        guard let circleDoc = snapshot.documents.first,
+              var circle = FamilyCircle(dictionary: circleDoc.data()) else {
             throw CircleError.invalidInviteCode
         }
 
         // Check if user is already a member
-        if let memberIds = circleDoc.data()["memberIds"] as? [String],
-           memberIds.contains(userId) {
+        if circle.memberIds.contains(userId) {
             throw CircleError.alreadyMember
         }
-
-        let circleId = circleDoc.documentID
 
         // Add user to circle
         try await circleDoc.reference.updateData([
@@ -176,8 +177,16 @@ class FirestoreService: ObservableObject {
 
         // Add circle to user
         try await db.collection("users").document(userId).updateData([
-            "circleIds": FieldValue.arrayUnion([circleId])
+            "circleIds": FieldValue.arrayUnion([circle.id])
         ])
+
+        // Update local circle object to include the new member
+        circle.memberIds.append(userId)
+
+        // Switch to the joined circle
+        switchCircle(to: circle.id)
+
+        return circle
     }
 
     // MARK: - Circle Errors

@@ -8,10 +8,10 @@ struct MapView: View {
     @EnvironmentObject var firestoreService: FirestoreService
     @EnvironmentObject var locationManager: PrecisionLocationManager  // Use shared instance
     @StateObject private var sosService = SOSService.shared
-    @State private var region = MKCoordinateRegion(
+    @State private var cameraPosition = MapCameraPosition.region(MKCoordinateRegion(
         center: CLLocationCoordinate2D(latitude: 37.7749, longitude: -122.4194),
         span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
-    )
+    ))
     @State private var selectedMember: UserProfile?
     @State private var showPrecisionInfo: Bool = false
     @State private var showSOSSheet: Bool = false
@@ -53,8 +53,10 @@ struct MapView: View {
                 onSOSAlertTap: { alert in
                     // Center map on the SOS location
                     withAnimation {
-                        region.center = alert.coordinate
-                        region.span = MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01)
+                        cameraPosition = .region(MKCoordinateRegion(
+                            center: alert.coordinate,
+                            span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01)
+                        ))
                     }
                 }
             )
@@ -79,7 +81,10 @@ struct MapView: View {
             // Center map on first location received
             if !hasInitiallyLocated, let location = newLocation {
                 withAnimation {
-                    region.center = location.coordinate
+                    cameraPosition = .region(MKCoordinateRegion(
+                        center: location.coordinate,
+                        span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
+                    ))
                 }
                 hasInitiallyLocated = true
             }
@@ -108,19 +113,32 @@ struct MapView: View {
     }
 
     private var mapView: some View {
-        Map(coordinateRegion: $region, showsUserLocation: true, annotationItems: membersWithValidLocation) { member in
-            // Safe to force-unwrap since we filtered for hasValidLocation
-            MapAnnotation(coordinate: member.coordinate!) {
-                MemberAnnotation(member: member, isSelected: selectedMember?.id == member.id)
-                    .onTapGesture {
-                        withAnimation {
-                            selectedMember = member
-                            if let coordinate = member.coordinate {
-                                region.center = coordinate
+        Map(position: $cameraPosition) {
+            // User location
+            UserAnnotation()
+
+            // Circle members with valid locations
+            ForEach(membersWithValidLocation) { member in
+                if let coordinate = member.coordinate {
+                    Annotation(member.displayName, coordinate: coordinate) {
+                        MemberAnnotation(member: member, isSelected: selectedMember?.id == member.id)
+                            .onTapGesture {
+                                withAnimation {
+                                    selectedMember = member
+                                    cameraPosition = .region(MKCoordinateRegion(
+                                        center: coordinate,
+                                        span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01)
+                                    ))
+                                }
                             }
-                        }
                     }
+                }
             }
+        }
+        .mapControls {
+            MapUserLocationButton()
+            MapCompass()
+            MapScaleView()
         }
         .ignoresSafeArea(edges: .top)
     }
@@ -161,7 +179,10 @@ struct MapView: View {
     private func centerOnUser() {
         if let location = locationManager.currentLocation {
             withAnimation {
-                region.center = location.coordinate
+                cameraPosition = .region(MKCoordinateRegion(
+                    center: location.coordinate,
+                    span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01)
+                ))
             }
         }
     }
@@ -169,7 +190,10 @@ struct MapView: View {
     private func centerOnUserIfNeeded() {
         if !hasInitiallyLocated, let location = locationManager.currentLocation {
             withAnimation {
-                region.center = location.coordinate
+                cameraPosition = .region(MKCoordinateRegion(
+                    center: location.coordinate,
+                    span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
+                ))
             }
             hasInitiallyLocated = true
         }

@@ -23,6 +23,9 @@ struct Life380App: App {
                     // Request notification permissions and set up categories
                     await setupNotifications()
                 }
+                .onOpenURL { url in
+                    handleDeepLink(url)
+                }
         }
     }
 
@@ -33,6 +36,29 @@ struct Life380App: App {
         // Request authorization
         _ = await notificationService.requestAuthorization()
     }
+
+    /// Handle deep links for circle invites
+    /// Format: life380://join?code=ABC123
+    private func handleDeepLink(_ url: URL) {
+        guard url.scheme == "life380",
+              url.host == "join",
+              let components = URLComponents(url: url, resolvingAgainstBaseURL: false),
+              let code = components.queryItems?.first(where: { $0.name == "code" })?.value
+        else { return }
+
+        // Post notification to trigger join flow
+        NotificationCenter.default.post(
+            name: .joinCircleDeepLink,
+            object: nil,
+            userInfo: ["code": code]
+        )
+    }
+}
+
+// MARK: - Deep Link Notifications
+
+extension Notification.Name {
+    static let joinCircleDeepLink = Notification.Name("joinCircleDeepLink")
 }
 
 struct RootView: View {

@@ -531,7 +531,7 @@ struct JoinCircleView: View {
 
         Task {
             do {
-                try await firestoreService.joinCircle(inviteCode: inviteCode)
+                _ = try await firestoreService.joinCircle(inviteCode: inviteCode)
 
                 // Show success message
                 showSuccess = true

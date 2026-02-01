@@ -1,7 +1,11 @@
 import SwiftUI
+import UIKit
 
 struct CircleView: View {
     @EnvironmentObject var firestoreService: FirestoreService
+    @State private var showingCreateCircle = false
+    @State private var showingJoinCircle = false
+    @State private var deepLinkCode: String?
 
     var body: some View {
         NavigationStack {
@@ -67,14 +71,14 @@ struct CircleView: View {
 
                         Divider()
 
-                        NavigationLink {
-                            CreateCircleView()
+                        Button {
+                            showingCreateCircle = true
                         } label: {
                             Label("Create New Circle", systemImage: "plus.circle")
                         }
 
-                        NavigationLink {
-                            JoinCircleView()
+                        Button {
+                            showingJoinCircle = true
                         } label: {
                             Label("Join Circle", systemImage: "person.badge.plus")
                         }
@@ -83,8 +87,22 @@ struct CircleView: View {
                     }
                 }
             }
+            .sheet(isPresented: $showingCreateCircle) {
+                CreateCircleSheet()
+            }
+            .sheet(isPresented: $showingJoinCircle) {
+                JoinCircleSheet(prefilledCode: deepLinkCode)
+                    .onDisappear {
+                        deepLinkCode = nil
+                    }
+            }
+            .onReceive(NotificationCenter.default.publisher(for: .joinCircleDeepLink)) { notification in
+                if let code = notification.userInfo?["code"] as? String {
+                    deepLinkCode = code
+                    showingJoinCircle = true
+                }
+            }
             .refreshable {
-                // Refresh circle members
                 if let circleId = firestoreService.currentCircleId {
                     firestoreService.listenToCircleMembers(circleId: circleId)
                 }
@@ -104,6 +122,256 @@ struct CircleView: View {
         }
     }
 }
+
+// MARK: - Create Circle Sheet
+
+struct CreateCircleSheet: View {
+    @EnvironmentObject var firestoreService: FirestoreService
+    @Environment(\.dismiss) private var dismiss
+
+    @State private var circleName = ""
+    @State private var isCreating = false
+    @State private var errorMessage: String?
+    @State private var createdCircle: FamilyCircle?
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section {
+                    TextField("Circle Name", text: $circleName)
+                        .textContentType(.organizationName)
+                } header: {
+                    Text("Circle Details")
+                } footer: {
+                    Text("Choose a name like \"Smith Family\" or \"Close Friends\"")
+                }
+
+                if let error = errorMessage {
+                    Section {
+                        Text(error)
+                            .foregroundColor(.red)
+                    }
+                }
+
+                if let circle = createdCircle {
+                    Section {
+                        VStack(alignment: .leading, spacing: 12) {
+                            HStack {
+                                Image(systemName: "checkmark.circle.fill")
+                                    .foregroundColor(.green)
+                                Text("Circle Created!")
+                                    .font(.headline)
+                            }
+
+                            Divider()
+
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("Invite Code")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                                HStack {
+                                    Text(circle.inviteCode)
+                                        .font(.system(.title2, design: .monospaced))
+                                        .fontWeight(.bold)
+                                    Spacer()
+                                    Button {
+                                        UIPasteboard.general.string = circle.inviteCode
+                                    } label: {
+                                        Image(systemName: "doc.on.doc")
+                                    }
+                                }
+                            }
+
+                            Text("Share this code with family members.")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                    }
+
+                    Section {
+                        Button("Done") { dismiss() }
+                    }
+                } else {
+                    Section {
+                        Button {
+                            createCircle()
+                        } label: {
+                            HStack {
+                                Spacer()
+                                if isCreating {
+                                    ProgressView()
+                                        .padding(.trailing, 8)
+                                }
+                                Text(isCreating ? "Creating..." : "Create Circle")
+                                Spacer()
+                            }
+                        }
+                        .disabled(circleName.trimmingCharacters(in: .whitespaces).isEmpty || isCreating)
+                    }
+                }
+            }
+            .navigationTitle("Create Circle")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { dismiss() }
+                }
+            }
+        }
+    }
+
+    private func createCircle() {
+        let name = circleName.trimmingCharacters(in: .whitespaces)
+        guard !name.isEmpty else { return }
+
+        isCreating = true
+        errorMessage = nil
+
+        Task {
+            do {
+                let circle = try await firestoreService.createCircle(name: name)
+                createdCircle = circle
+            } catch {
+                errorMessage = error.localizedDescription
+            }
+            isCreating = false
+        }
+    }
+}
+
+// MARK: - Join Circle Sheet
+
+struct JoinCircleSheet: View {
+    @EnvironmentObject var firestoreService: FirestoreService
+    @Environment(\.dismiss) private var dismiss
+
+    var prefilledCode: String?
+
+    @State private var inviteCode = ""
+    @State private var isJoining = false
+    @State private var errorMessage: String?
+    @State private var joinedCircle: FamilyCircle?
+    @FocusState private var isCodeFieldFocused: Bool
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section {
+                    TextField("Invite Code", text: $inviteCode)
+                        .textInputAutocapitalization(.characters)
+                        .autocorrectionDisabled()
+                        .font(.system(.title3, design: .monospaced))
+                        .focused($isCodeFieldFocused)
+                        .onChange(of: inviteCode) { _, newValue in
+                            let filtered = String(newValue.uppercased().prefix(6))
+                            if filtered != newValue {
+                                inviteCode = filtered
+                            }
+                        }
+                } header: {
+                    Text("Enter Invite Code")
+                } footer: {
+                    Text("Ask a circle member to share their 6-character invite code.")
+                }
+
+                if let error = errorMessage {
+                    Section {
+                        Text(error)
+                            .foregroundColor(.red)
+                    }
+                }
+
+                if let circle = joinedCircle {
+                    Section {
+                        VStack(alignment: .leading, spacing: 12) {
+                            HStack {
+                                Image(systemName: "checkmark.circle.fill")
+                                    .foregroundColor(.green)
+                                Text("Joined Successfully!")
+                                    .font(.headline)
+                            }
+
+                            Divider()
+
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("Circle Name")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                                Text(circle.name)
+                                    .font(.title3)
+                                    .fontWeight(.semibold)
+                            }
+
+                            Text("\(circle.memberIds.count) member\(circle.memberIds.count == 1 ? "" : "s")")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                    }
+
+                    Section {
+                        Button("Done") { dismiss() }
+                    }
+                } else {
+                    Section {
+                        Button {
+                            joinCircle()
+                        } label: {
+                            HStack {
+                                Spacer()
+                                if isJoining {
+                                    ProgressView()
+                                        .padding(.trailing, 8)
+                                }
+                                Text(isJoining ? "Joining..." : "Join Circle")
+                                Spacer()
+                            }
+                        }
+                        .disabled(inviteCode.count != 6 || isJoining)
+                    }
+                }
+            }
+            .navigationTitle("Join Circle")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { dismiss() }
+                }
+            }
+            .onAppear {
+                if let code = prefilledCode, !code.isEmpty {
+                    inviteCode = code.uppercased()
+                    joinCircle()
+                } else {
+                    isCodeFieldFocused = true
+                }
+            }
+        }
+    }
+
+    private func joinCircle() {
+        let code = inviteCode.trimmingCharacters(in: .whitespaces).uppercased()
+        guard code.count == 6 else { return }
+
+        isJoining = true
+        errorMessage = nil
+
+        Task {
+            do {
+                let circle = try await firestoreService.joinCircle(inviteCode: code)
+                joinedCircle = circle
+            } catch {
+                if let circleError = error as? FirestoreService.CircleError {
+                    errorMessage = circleError.localizedDescription
+                } else {
+                    errorMessage = "Failed to join circle. Please check the code and try again."
+                }
+            }
+            isJoining = false
+        }
+    }
+}
+
+// MARK: - Member Row
 
 struct MemberRow: View {
     let member: UserProfile

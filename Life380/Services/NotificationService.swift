@@ -337,12 +337,13 @@ class NotificationService: ObservableObject {
     }
 
     func clearNotificationsForPlace(placeId: String) {
-        notificationCenter.getDeliveredNotifications { notifications in
+        Task {
+            let notifications = await notificationCenter.deliveredNotifications()
             let idsToRemove = notifications
                 .filter { $0.request.content.userInfo["placeId"] as? String == placeId }
                 .map { $0.request.identifier }
 
-            self.notificationCenter.removeDeliveredNotifications(withIdentifiers: idsToRemove)
+            notificationCenter.removeDeliveredNotifications(withIdentifiers: idsToRemove)
         }
     }
 
