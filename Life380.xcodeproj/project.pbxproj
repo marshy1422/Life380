@@ -45,6 +45,9 @@
 		A1000001001800000000034A /* InsightsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000001001700000000034A /* InsightsService.swift */; };
 		A1000001001800000000035A /* InsightsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000001001700000000035A /* InsightsView.swift */; };
 		A1000001001800000000036A /* BetaFeedbackView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000001001700000000036A /* BetaFeedbackView.swift */; };
+		A1000001001800000000037A /* BiometricAuthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000001001700000000037A /* BiometricAuthService.swift */; };
+		A1000001001800000000038A /* LocationHistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000001001700000000038A /* LocationHistoryView.swift */; };
+		A1000001001800000000039A /* SecurityService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000001001700000000039A /* SecurityService.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -85,6 +88,9 @@
 		A1000001001700000000034A /* InsightsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InsightsService.swift; sourceTree = "<group>"; };
 		A1000001001700000000035A /* InsightsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InsightsView.swift; sourceTree = "<group>"; };
 		A1000001001700000000036A /* BetaFeedbackView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BetaFeedbackView.swift; sourceTree = "<group>"; };
+		A1000001001700000000037A /* BiometricAuthService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BiometricAuthService.swift; sourceTree = "<group>"; };
+		A1000001001700000000038A /* LocationHistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationHistoryView.swift; sourceTree = "<group>"; };
+		A1000001001700000000039A /* SecurityService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecurityService.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -132,6 +138,7 @@
 				A1000001001700000000006A /* CircleView.swift */,
 				A1000001001700000000007A /* SettingsView.swift */,
 				A1000001001700000000035A /* InsightsView.swift */,
+				A1000001001700000000038A /* LocationHistoryView.swift */,
 				A1000001001200000000005A /* Auth */,
 				A1000001001200000000006A /* Legal */,
 				A1000001001200000000007A /* Settings */,
@@ -164,6 +171,8 @@
 				A1000001001700000000029A /* ETAService.swift */,
 				A1000001001700000000031A /* SOSService.swift */,
 				A1000001001700000000034A /* InsightsService.swift */,
+				A1000001001700000000037A /* BiometricAuthService.swift */,
+				A1000001001700000000039A /* SecurityService.swift */,
 				A1000001001700000000023A /* GoogleService-Info.plist */,
 			);
 			path = Services;
@@ -257,7 +266,7 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 1500;
-				LastUpgradeCheck = 1500;
+				LastUpgradeCheck = 2620;
 				TargetAttributes = {
 					A1000001001400000000001A = {
 						CreatedOnToolsVersion = 15.0;
@@ -335,6 +344,9 @@
 				A1000001001800000000034A /* InsightsService.swift in Sources */,
 				A1000001001800000000035A /* InsightsView.swift in Sources */,
 				A1000001001800000000036A /* BetaFeedbackView.swift in Sources */,
+				A1000001001800000000037A /* BiometricAuthService.swift in Sources */,
+				A1000001001800000000038A /* LocationHistoryView.swift in Sources */,
+				A1000001001800000000039A /* SecurityService.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -473,12 +485,16 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Life380/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Life380;
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.social-networking";
-				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "Life380 needs your location in the background to keep your family updated on your whereabouts.";
-				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Life380 needs your location to show your position on the map and share it with your family circle.";
+				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "Life380 uses background location to notify your family when you arrive or leave places, even when the app is closed. This helps keep everyone connected and safe.";
+				INFOPLIST_KEY_NSLocationAlwaysUsageDescription = "Life380 uses background location to notify your family when you arrive or leave places, even when the app is closed.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Life380 uses your location to show where you are on the family map and calculate arrival times to saved places.";
+				INFOPLIST_KEY_NSMotionUsageDescription = "Life380 uses motion data to improve location accuracy and detect when you're driving, walking, or stationary.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UIRequiredDeviceCapabilities = "arm64 location-services";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -507,12 +523,16 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Life380/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Life380;
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.social-networking";
-				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "Life380 needs your location in the background to keep your family updated on your whereabouts.";
-				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Life380 needs your location to show your position on the map and share it with your family circle.";
+				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "Life380 uses background location to notify your family when you arrive or leave places, even when the app is closed. This helps keep everyone connected and safe.";
+				INFOPLIST_KEY_NSLocationAlwaysUsageDescription = "Life380 uses background location to notify your family when you arrive or leave places, even when the app is closed.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Life380 uses your location to show where you are on the family map and calculate arrival times to saved places.";
+				INFOPLIST_KEY_NSMotionUsageDescription = "Life380 uses motion data to improve location accuracy and detect when you're driving, walking, or stationary.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UIRequiredDeviceCapabilities = "arm64 location-services";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				LD_RUNPATH_SEARCH_PATHS = (

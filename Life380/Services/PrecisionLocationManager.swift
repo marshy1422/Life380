@@ -104,31 +104,167 @@ enum MotionState: String {
     case stationary = "stationary"
     case walking = "walking"
     case running = "running"
+    case cycling = "cycling"
     case driving = "driving"
     case unknown = "unknown"
 
     var updateInterval: TimeInterval {
         switch self {
-        case .stationary: return 30    // Update every 30s when still
-        case .walking: return 10       // Update every 10s when walking
-        case .running: return 5        // Update every 5s when running
+        case .stationary: return 60    // Update every 60s when still (battery save)
+        case .walking: return 15       // Update every 15s when walking
+        case .running: return 8        // Update every 8s when running
+        case .cycling: return 5        // Update every 5s when cycling
         case .driving: return 3        // Update every 3s when driving
-        case .unknown: return 10
+        case .unknown: return 15
         }
     }
 
     var accuracyThreshold: Double {
         switch self {
-        case .stationary: return 50    // Accept 50m when stationary
+        case .stationary: return 100   // Accept 100m when stationary (battery save)
         case .walking: return 30       // Need 30m when walking
         case .running: return 30
+        case .cycling: return 40
         case .driving: return 50       // Allow 50m when driving (GPS works well)
-        case .unknown: return 40
+        case .unknown: return 50
+        }
+    }
+
+    var displayName: String {
+        switch self {
+        case .stationary: return "Stationary"
+        case .walking: return "Walking"
+        case .running: return "Running"
+        case .cycling: return "Cycling"
+        case .driving: return "Driving"
+        case .unknown: return "Unknown"
+        }
+    }
+
+    var icon: String {
+        switch self {
+        case .stationary: return "figure.stand"
+        case .walking: return "figure.walk"
+        case .running: return "figure.run"
+        case .cycling: return "bicycle"
+        case .driving: return "car.fill"
+        case .unknown: return "questionmark"
+        }
+    }
+
+    /// Estimated speed range in m/s
+    var speedRange: ClosedRange<Double> {
+        switch self {
+        case .stationary: return 0...0.5
+        case .walking: return 0.5...2.5      // 1.8-9 km/h
+        case .running: return 2.5...6        // 9-21.6 km/h
+        case .cycling: return 3...12         // 10.8-43.2 km/h
+        case .driving: return 8...50         // 28.8-180 km/h
+        case .unknown: return 0...50
         }
     }
 }
 
-// MARK: - Kalman Filter
+// MARK: - Driving Alert
+
+struct DrivingAlert: Identifiable {
+    let id = UUID()
+    let type: DrivingAlertType
+    let speed: Double // m/s
+    let speedLimit: Double? // m/s, if known
+    let timestamp: Date
+    let coordinate: CLLocationCoordinate2D
+
+    var speedKmh: Double { speed * 3.6 }
+    var speedLimitKmh: Double? { speedLimit.map { $0 * 3.6 } }
+}
+
+enum DrivingAlertType: String {
+    case speeding = "speeding"
+    case hardBraking = "hard_braking"
+    case rapidAcceleration = "rapid_acceleration"
+    case phoneUsage = "phone_usage"  // Detected when screen is on while driving
+}
+
+// MARK: - Extended Kalman Filter
+
+/// Extended Kalman filter with velocity prediction for location smoothing
+class ExtendedKalmanFilter {
+    // State: [position, velocity]
+    private var position: Double = 0
+    private var velocity: Double = 0
+
+    // Covariance matrix (simplified to variances)
+    private var positionVariance: Double = 1
+    private var velocityVariance: Double = 1
+
+    // Process noise
+    private var processNoisePosition: Double
+    private var processNoiseVelocity: Double
+
+    // Last update time for dt calculation
+    private var lastUpdateTime: Date?
+
+    init(processNoisePosition: Double = 0.00001, processNoiseVelocity: Double = 0.0001) {
+        self.processNoisePosition = processNoisePosition
+        self.processNoiseVelocity = processNoiseVelocity
+    }
+
+    func update(measurement: Double, measurementError: Double, timestamp: Date) -> (position: Double, velocity: Double) {
+        // Calculate time delta
+        let dt: Double
+        if let lastTime = lastUpdateTime {
+            dt = timestamp.timeIntervalSince(lastTime)
+        } else {
+            dt = 1.0
+        }
+        lastUpdateTime = timestamp
+
+        // Clamp dt to reasonable values
+        let clampedDt = min(max(dt, 0.1), 30.0)
+
+        // Prediction step: x_pred = x + v * dt
+        let predictedPosition = position + velocity * clampedDt
+        let predictedVelocity = velocity
+
+        // Predicted covariance
+        let predictedPosVar = positionVariance + velocityVariance * clampedDt * clampedDt + processNoisePosition
+        let predictedVelVar = velocityVariance + processNoiseVelocity
+
+        // Kalman gain for position
+        let kalmanGain = predictedPosVar / (predictedPosVar + measurementError)
+
+        // Update step
+        let innovation = measurement - predictedPosition
+        position = predictedPosition + kalmanGain * innovation
+
+        // Update velocity estimate based on innovation
+        if clampedDt > 0.1 {
+            let velocityInnovation = innovation / clampedDt
+            let velocityKalmanGain = 0.3 // Slower adaptation for velocity
+            velocity = predictedVelocity + velocityKalmanGain * velocityInnovation
+        }
+
+        // Update covariance
+        positionVariance = (1 - kalmanGain) * predictedPosVar
+        velocityVariance = predictedVelVar * 0.95 // Slight decay
+
+        return (position, velocity)
+    }
+
+    func reset(to value: Double, velocity: Double = 0) {
+        self.position = value
+        self.velocity = velocity
+        self.positionVariance = 1
+        self.velocityVariance = 1
+        self.lastUpdateTime = nil
+    }
+
+    var currentEstimate: Double { position }
+    var currentVelocity: Double { velocity }
+}
+
+// MARK: - Simple Kalman Filter (for backward compatibility)
 
 /// Simple 1D Kalman filter for location smoothing
 class KalmanFilter {
@@ -165,54 +301,260 @@ class KalmanFilter {
 
 // MARK: - Location Smoother
 
-/// Applies Kalman filtering to smooth location updates
+/// Applies Extended Kalman filtering with velocity prediction to smooth location updates
 class LocationSmoother {
-    private var latFilter: KalmanFilter
-    private var lonFilter: KalmanFilter
+    private var latFilter: ExtendedKalmanFilter
+    private var lonFilter: ExtendedKalmanFilter
+    private var altFilter: KalmanFilter
+    private var courseFilter: KalmanFilter
     private var isInitialized = false
 
+    // Outlier detection
+    private var lastAcceptedLocation: PrecisionLocation?
+    private let maxJumpDistance: Double = 500 // meters - reject jumps larger than this
+
+    // Source weighting - different sources have different reliability
+    private let sourceAccuracyMultiplier: [LocationSource: Double] = [
+        .gnss: 1.0,      // Trust GPS accuracy as-is
+        .fused: 1.2,     // Slightly less trust
+        .wifi: 1.5,      // WiFi can have optimistic accuracy
+        .cellular: 2.0,  // Cell is usually less accurate than reported
+        .cached: 3.0,    // Cached locations are least reliable
+        .unknown: 1.5
+    ]
+
     init() {
-        latFilter = KalmanFilter(processNoise: 0.00001)  // Tuned for lat/lon scale
-        lonFilter = KalmanFilter(processNoise: 0.00001)
+        latFilter = ExtendedKalmanFilter(processNoisePosition: 0.00001, processNoiseVelocity: 0.0001)
+        lonFilter = ExtendedKalmanFilter(processNoisePosition: 0.00001, processNoiseVelocity: 0.0001)
+        altFilter = KalmanFilter(processNoise: 0.5)
+        courseFilter = KalmanFilter(processNoise: 5.0)
     }
 
     func smooth(_ location: PrecisionLocation) -> PrecisionLocation {
+        // Outlier detection - reject impossible jumps
+        if let lastLocation = lastAcceptedLocation {
+            let distance = location.distance(to: lastLocation)
+            let timeDelta = location.timestamp.timeIntervalSince(lastLocation.timestamp)
+
+            // Calculate max possible distance based on time and reasonable max speed (200 km/h)
+            let maxPossibleDistance = max(timeDelta * 55.5, maxJumpDistance) // 55.5 m/s = 200 km/h
+
+            if distance > maxPossibleDistance && timeDelta < 60 {
+                // Likely an erroneous jump - return last known good location with updated timestamp
+                #if DEBUG
+                print("⚠️ Rejected location jump: \(Int(distance))m in \(Int(timeDelta))s")
+                #endif
+                return lastAcceptedLocation!
+            }
+        }
+
         if !isInitialized {
             latFilter.reset(to: location.latitude)
             lonFilter.reset(to: location.longitude)
+            if let alt = location.altitude {
+                altFilter.reset(to: alt)
+            }
+            if let course = location.course {
+                courseFilter.reset(to: course)
+            }
             isInitialized = true
+            lastAcceptedLocation = location
             return location
         }
 
-        // Use horizontal accuracy as measurement error (converted to approximate degrees)
-        let accuracyInDegrees = location.horizontalAccuracy / 111000  // ~111km per degree
+        // Apply source-based accuracy adjustment
+        let sourceMultiplier = sourceAccuracyMultiplier[location.source] ?? 1.5
+        let adjustedAccuracy = location.horizontalAccuracy * sourceMultiplier
 
-        let smoothedLat = latFilter.update(
+        // Convert accuracy to degrees for lat/lon filtering
+        let accuracyInDegrees = adjustedAccuracy / 111000  // ~111km per degree
+
+        // Apply extended Kalman filter with velocity prediction
+        let (smoothedLat, _) = latFilter.update(
             measurement: location.latitude,
-            measurementError: accuracyInDegrees
+            measurementError: accuracyInDegrees,
+            timestamp: location.timestamp
         )
-        let smoothedLon = lonFilter.update(
+        let (smoothedLon, _) = lonFilter.update(
             measurement: location.longitude,
-            measurementError: accuracyInDegrees
+            measurementError: accuracyInDegrees / cos(location.latitude * .pi / 180), // Adjust for longitude scale
+            timestamp: location.timestamp
         )
 
-        return PrecisionLocation(
+        // Smooth altitude if available
+        var smoothedAltitude = location.altitude
+        if let alt = location.altitude {
+            smoothedAltitude = altFilter.update(measurement: alt, measurementError: location.verticalAccuracy ?? 10)
+        }
+
+        // Smooth course for heading stability
+        var smoothedCourse = location.course
+        if let course = location.course, course >= 0 {
+            // Handle wraparound at 0/360
+            var currentCourse = courseFilter.update(measurement: course, measurementError: 10)
+            currentCourse = currentCourse.truncatingRemainder(dividingBy: 360)
+            if currentCourse < 0 { currentCourse += 360 }
+            smoothedCourse = currentCourse
+        }
+
+        // Calculate improved accuracy estimate based on filter convergence
+        let improvedAccuracy = min(location.horizontalAccuracy, adjustedAccuracy * 0.8)
+
+        let smoothedLocation = PrecisionLocation(
             id: location.id,
             latitude: smoothedLat,
             longitude: smoothedLon,
-            altitude: location.altitude,
-            horizontalAccuracy: location.horizontalAccuracy,
+            altitude: smoothedAltitude,
+            horizontalAccuracy: improvedAccuracy,
             verticalAccuracy: location.verticalAccuracy,
-            course: location.course,
+            course: smoothedCourse,
             speed: location.speed,
             timestamp: location.timestamp,
             source: location.source,
             floor: location.floor
         )
+
+        lastAcceptedLocation = smoothedLocation
+        return smoothedLocation
+    }
+
+    /// Get predicted position based on current velocity
+    func predictPosition(afterSeconds seconds: Double) -> CLLocationCoordinate2D? {
+        guard isInitialized else { return nil }
+
+        let predictedLat = latFilter.currentEstimate + latFilter.currentVelocity * seconds
+        let predictedLon = lonFilter.currentEstimate + lonFilter.currentVelocity * seconds
+
+        return CLLocationCoordinate2D(latitude: predictedLat, longitude: predictedLon)
     }
 
     func reset() {
         isInitialized = false
+        lastAcceptedLocation = nil
+    }
+}
+
+// MARK: - Sensor Fusion
+
+/// Multi-source sensor fusion for optimal location accuracy
+class SensorFusion {
+    // Weighted combination of multiple location sources
+    private var sourceHistory: [LocationSource: [CLLocation]] = [:]
+    private let maxHistoryPerSource = 3
+
+    /// Fuse multiple location readings to produce the best estimate
+    func fuseLocations(_ locations: [CLLocation], sources: [LocationSource]) -> (CLLocation, LocationSource)? {
+        guard !locations.isEmpty else { return nil }
+
+        // If only one location, return it
+        if locations.count == 1 {
+            return (locations[0], sources.first ?? .unknown)
+        }
+
+        // Weight each location by its accuracy (inverse variance weighting)
+        var totalWeight: Double = 0
+        var weightedLat: Double = 0
+        var weightedLon: Double = 0
+        var weightedAlt: Double = 0
+        var altCount = 0
+        var bestAccuracy: Double = .infinity
+
+        for (index, location) in locations.enumerated() {
+            guard location.horizontalAccuracy > 0 else { continue }
+
+            // Apply source-specific trust factor
+            let source = index < sources.count ? sources[index] : .unknown
+            let trustFactor = sourceTrustFactor(source)
+
+            // Weight is inverse of variance (accuracy^2), adjusted by trust factor
+            let weight = trustFactor / (location.horizontalAccuracy * location.horizontalAccuracy)
+
+            weightedLat += location.coordinate.latitude * weight
+            weightedLon += location.coordinate.longitude * weight
+            totalWeight += weight
+
+            if location.altitude != 0 {
+                weightedAlt += location.altitude * weight
+                altCount += 1
+            }
+
+            if location.horizontalAccuracy < bestAccuracy {
+                bestAccuracy = location.horizontalAccuracy
+            }
+        }
+
+        guard totalWeight > 0 else { return nil }
+
+        // Calculate weighted average
+        let fusedLat = weightedLat / totalWeight
+        let fusedLon = weightedLon / totalWeight
+        let fusedAlt = altCount > 0 ? weightedAlt / totalWeight : 0
+
+        // Fused accuracy is better than best individual (by combining information)
+        let fusedAccuracy = bestAccuracy * 0.8
+
+        let fusedLocation = CLLocation(
+            coordinate: CLLocationCoordinate2D(latitude: fusedLat, longitude: fusedLon),
+            altitude: fusedAlt,
+            horizontalAccuracy: fusedAccuracy,
+            verticalAccuracy: -1,
+            timestamp: locations.last?.timestamp ?? Date()
+        )
+
+        return (fusedLocation, .fused)
+    }
+
+    /// Calculate consistency score between multiple readings
+    func consistencyScore(locations: [CLLocation]) -> Double {
+        guard locations.count >= 2 else { return 1.0 }
+
+        var totalDistance: Double = 0
+        let referenceLocation = locations[0]
+
+        for location in locations.dropFirst() {
+            totalDistance += referenceLocation.distance(from: location)
+        }
+
+        let avgDistance = totalDistance / Double(locations.count - 1)
+
+        // Score from 0 to 1 (1 = all readings are identical)
+        // 0 when avgDistance >= 100m
+        return max(0, 1 - (avgDistance / 100))
+    }
+
+    /// Detect potential GPS spoofing or anomalies
+    func detectAnomaly(newLocation: CLLocation, history: [CLLocation]) -> Bool {
+        guard let lastLocation = history.last else { return false }
+
+        let distance = newLocation.distance(from: lastLocation)
+        let timeDelta = newLocation.timestamp.timeIntervalSince(lastLocation.timestamp)
+
+        guard timeDelta > 0 else { return true } // Same timestamp = suspicious
+
+        let speed = distance / timeDelta // m/s
+
+        // Flag if speed exceeds ~400 km/h (111 m/s) - faster than commercial aircraft
+        if speed > 111 {
+            return true
+        }
+
+        // Flag if accuracy suddenly becomes impossibly good
+        if newLocation.horizontalAccuracy < 1 && lastLocation.horizontalAccuracy > 20 {
+            return true
+        }
+
+        return false
+    }
+
+    private func sourceTrustFactor(_ source: LocationSource) -> Double {
+        switch source {
+        case .gnss: return 1.0
+        case .fused: return 0.95
+        case .wifi: return 0.7
+        case .cellular: return 0.4
+        case .cached: return 0.2
+        case .unknown: return 0.5
+        }
     }
 }
 
@@ -229,9 +571,27 @@ class PrecisionLocationManager: NSObject, ObservableObject {
     @Published var currentFloor: FloorLevel?
     @Published var isInBackground: Bool = false
 
+    // Driving detection and alerts
+    @Published var isDriving: Bool = false
+    @Published var currentSpeed: Double = 0 // m/s
+    @Published var drivingAlerts: [DrivingAlert] = []
+    @Published var tripStartTime: Date?
+    @Published var tripDistance: Double = 0 // meters
+
+    // Speed alert configuration
+    @AppStorage("speedAlertThreshold") private var speedAlertThreshold: Double = 33.33 // 120 km/h default
+    @AppStorage("enableSpeedAlerts") private var enableSpeedAlerts: Bool = true
+    @AppStorage("enableDrivingDetection") private var enableDrivingDetection: Bool = true
+
     // Location history for patterns and debugging
     @Published var locationHistory: [PrecisionLocation] = []
     private let maxHistoryCount = 100
+
+    // Driving detection state
+    private var speedHistory: [Double] = []
+    private let speedHistorySize = 5
+    private var lastDrivingAlertTime: Date?
+    private let minAlertInterval: TimeInterval = 60 // Don't spam alerts
 
     // Geofencing
     @Published var monitoredRegions: [CLCircularRegion] = []
@@ -259,10 +619,16 @@ class PrecisionLocationManager: NSObject, ObservableObject {
     private let altimeter = CMAltimeter()
     #endif
     private let smoother = LocationSmoother()
+    private let sensorFusion = SensorFusion()
 
     private var lastAcceptedLocation: CLLocation?
     private var rejectedLocationCount = 0
     private var updateTimer: Timer?
+
+    // Recent locations buffer for multi-source fusion
+    private var recentLocations: [CLLocation] = []
+    private let recentLocationBufferSize = 5
+    private let recentLocationMaxAge: TimeInterval = 10 // seconds
 
     // Altimeter state
     private var referenceAltitude: Double?
@@ -363,6 +729,8 @@ class PrecisionLocationManager: NSObject, ObservableObject {
             newState = .running
         } else if activity.walking {
             newState = .walking
+        } else if activity.cycling {
+            newState = .cycling
         } else if activity.automotive {
             newState = .driving
         } else {
@@ -381,18 +749,212 @@ class PrecisionLocationManager: NSObject, ObservableObject {
     private func adaptToMotionState() {
         guard enableMotionAdaptive else { return }
 
-        // Adjust accuracy threshold based on motion
-        // When stationary, we can be more lenient; when moving, we need precision
+        // Adjust accuracy and power based on motion state
         switch motionState {
         case .stationary:
+            // Maximum battery saving when not moving
             locationManager.desiredAccuracy = kCLLocationAccuracyHundredMeters
-        case .walking, .running:
+            locationManager.distanceFilter = 50 // Only update if moved 50m
+            locationManager.activityType = .other
+        case .walking:
+            locationManager.desiredAccuracy = kCLLocationAccuracyNearestTenMeters
+            locationManager.distanceFilter = 10
+            locationManager.activityType = .fitness
+        case .running:
             locationManager.desiredAccuracy = kCLLocationAccuracyBest
+            locationManager.distanceFilter = 5
+            locationManager.activityType = .fitness
+        case .cycling:
+            locationManager.desiredAccuracy = kCLLocationAccuracyBest
+            locationManager.distanceFilter = 10
+            locationManager.activityType = .fitness
         case .driving:
+            // Best accuracy for navigation
             locationManager.desiredAccuracy = kCLLocationAccuracyBestForNavigation
+            locationManager.distanceFilter = kCLDistanceFilterNone
+            locationManager.activityType = .automotiveNavigation
+            handleDrivingStarted()
         case .unknown:
             locationManager.desiredAccuracy = kCLLocationAccuracyBest
+            locationManager.distanceFilter = 20
+            locationManager.activityType = .other
         }
+
+        // If we stopped driving, record trip end
+        if motionState != .driving && isDriving {
+            handleDrivingEnded()
+        }
+    }
+
+    // MARK: - Driving Detection & Speed Alerts
+
+    private func handleDrivingStarted() {
+        guard enableDrivingDetection else { return }
+
+        if !isDriving {
+            DispatchQueue.main.async {
+                self.isDriving = true
+                self.tripStartTime = Date()
+                self.tripDistance = 0
+            }
+
+            #if DEBUG
+            print("🚗 [DRIVING] Trip started")
+            #endif
+        }
+    }
+
+    private func handleDrivingEnded() {
+        guard isDriving else { return }
+
+        let duration = tripStartTime.map { Date().timeIntervalSince($0) } ?? 0
+
+        DispatchQueue.main.async {
+            self.isDriving = false
+
+            #if DEBUG
+            print("🚗 [DRIVING] Trip ended - Distance: \(Int(self.tripDistance))m, Duration: \(Int(duration))s")
+            #endif
+        }
+    }
+
+    private func updateSpeedTracking(_ speed: Double, coordinate: CLLocationCoordinate2D) {
+        guard enableDrivingDetection else { return }
+
+        // Update current speed
+        DispatchQueue.main.async {
+            self.currentSpeed = max(0, speed)
+        }
+
+        // Maintain speed history for smoothing and analysis
+        speedHistory.append(speed)
+        if speedHistory.count > speedHistorySize {
+            speedHistory.removeFirst()
+        }
+
+        // Calculate average speed
+        let avgSpeed = speedHistory.reduce(0, +) / Double(speedHistory.count)
+
+        // Detect driving from speed if motion detection missed it
+        if avgSpeed > 10 && !isDriving && enableDrivingDetection { // > 36 km/h
+            DispatchQueue.main.async {
+                self.motionState = .driving
+            }
+            handleDrivingStarted()
+        }
+
+        // Update trip distance
+        if isDriving, let lastLocation = lastAcceptedLocation {
+            let newLocation = CLLocation(latitude: coordinate.latitude, longitude: coordinate.longitude)
+            let delta = newLocation.distance(from: lastLocation)
+            if delta < 1000 { // Sanity check - ignore jumps > 1km
+                DispatchQueue.main.async {
+                    self.tripDistance += delta
+                }
+            }
+        }
+
+        // Check for speed alerts
+        checkSpeedAlerts(speed: speed, coordinate: coordinate)
+
+        // Check for harsh driving events
+        detectHarshDrivingEvents(currentSpeed: speed)
+    }
+
+    private func checkSpeedAlerts(speed: Double, coordinate: CLLocationCoordinate2D) {
+        guard enableSpeedAlerts, isDriving else { return }
+        guard speed > speedAlertThreshold else { return }
+
+        // Rate limit alerts
+        if let lastAlert = lastDrivingAlertTime,
+           Date().timeIntervalSince(lastAlert) < minAlertInterval {
+            return
+        }
+
+        let alert = DrivingAlert(
+            type: .speeding,
+            speed: speed,
+            speedLimit: nil, // TODO: Integrate speed limit data
+            timestamp: Date(),
+            coordinate: coordinate
+        )
+
+        DispatchQueue.main.async {
+            self.drivingAlerts.append(alert)
+            self.lastDrivingAlertTime = Date()
+        }
+
+        // Send notification
+        Task { @MainActor in
+            NotificationService.shared.notifySpeedAlert(
+                speed: speed * 3.6, // Convert to km/h
+                limit: self.speedAlertThreshold * 3.6
+            )
+        }
+
+        #if DEBUG
+        print("⚠️ [SPEED] Alert: \(Int(speed * 3.6)) km/h exceeds threshold")
+        #endif
+    }
+
+    private func detectHarshDrivingEvents(currentSpeed: Double) {
+        guard speedHistory.count >= 2, isDriving else { return }
+
+        let previousSpeed = speedHistory[speedHistory.count - 2]
+        let speedDelta = currentSpeed - previousSpeed
+
+        // Hard braking: deceleration > 3 m/s² (assuming 1s intervals)
+        if speedDelta < -3 && currentSpeed > 5 {
+            let alert = DrivingAlert(
+                type: .hardBraking,
+                speed: currentSpeed,
+                speedLimit: nil,
+                timestamp: Date(),
+                coordinate: currentLocation?.coordinate ?? CLLocationCoordinate2D()
+            )
+
+            DispatchQueue.main.async {
+                self.drivingAlerts.append(alert)
+            }
+
+            #if DEBUG
+            print("⚠️ [DRIVING] Hard braking detected")
+            #endif
+        }
+
+        // Rapid acceleration: > 4 m/s²
+        if speedDelta > 4 && previousSpeed > 2 {
+            let alert = DrivingAlert(
+                type: .rapidAcceleration,
+                speed: currentSpeed,
+                speedLimit: nil,
+                timestamp: Date(),
+                coordinate: currentLocation?.coordinate ?? CLLocationCoordinate2D()
+            )
+
+            DispatchQueue.main.async {
+                self.drivingAlerts.append(alert)
+            }
+
+            #if DEBUG
+            print("⚠️ [DRIVING] Rapid acceleration detected")
+            #endif
+        }
+    }
+
+    /// Clear driving alerts (e.g., after viewing)
+    func clearDrivingAlerts() {
+        drivingAlerts.removeAll()
+    }
+
+    /// Set custom speed alert threshold (in km/h)
+    func setSpeedAlertThreshold(kmh: Double) {
+        speedAlertThreshold = kmh / 3.6 // Store as m/s
+    }
+
+    /// Get current speed in km/h
+    var currentSpeedKmh: Double {
+        currentSpeed * 3.6
     }
 
     // MARK: - Background/Foreground Handling
@@ -604,7 +1166,19 @@ class PrecisionLocationManager: NSObject, ObservableObject {
     private func processLocation(_ clLocation: CLLocation) {
         totalLocationsReceived += 1
 
-        // Step 1: Accuracy filtering
+        // Step 0: Anomaly detection - reject obviously bad locations
+        if sensorFusion.detectAnomaly(newLocation: clLocation, history: recentLocations) {
+            locationsRejected += 1
+            #if DEBUG
+            print("⚠️ Anomaly detected, rejecting location")
+            #endif
+            return
+        }
+
+        // Step 1: Add to recent buffer for multi-source fusion
+        addToRecentBuffer(clLocation)
+
+        // Step 2: Accuracy filtering
         let effectiveThreshold = enableMotionAdaptive ? motionState.accuracyThreshold : accuracyThreshold
 
         guard clLocation.horizontalAccuracy >= 0,
@@ -612,29 +1186,66 @@ class PrecisionLocationManager: NSObject, ObservableObject {
             locationsRejected += 1
             rejectedLocationCount += 1
 
-            // If we've rejected too many in a row, accept the best of what we have
+            // If we've rejected too many in a row, try to use fused location from buffer
             if rejectedLocationCount > 5 {
-                acceptLocationWithWarning(clLocation)
+                if let fusedResult = attemptFusedLocation() {
+                    acceptLocation(fusedResult.0, source: fusedResult.1)
+                } else {
+                    acceptLocationWithWarning(clLocation)
+                }
             }
             return
         }
 
         rejectedLocationCount = 0
+
+        // Step 3: Try multi-source fusion for better accuracy
+        if let fusedResult = attemptFusedLocation() {
+            // Use fused if it's better than current
+            if fusedResult.0.horizontalAccuracy < clLocation.horizontalAccuracy {
+                acceptLocation(fusedResult.0, source: fusedResult.1)
+                return
+            }
+        }
+
         acceptLocation(clLocation)
     }
 
-    private func acceptLocation(_ clLocation: CLLocation) {
+    private func addToRecentBuffer(_ location: CLLocation) {
+        // Remove old entries
+        let cutoff = Date().addingTimeInterval(-recentLocationMaxAge)
+        recentLocations.removeAll { $0.timestamp < cutoff }
+
+        // Add new location
+        recentLocations.append(location)
+
+        // Trim to max size
+        if recentLocations.count > recentLocationBufferSize {
+            recentLocations.removeFirst(recentLocations.count - recentLocationBufferSize)
+        }
+    }
+
+    private func attemptFusedLocation() -> (CLLocation, LocationSource)? {
+        guard recentLocations.count >= 2 else { return nil }
+
+        // Determine sources for each location (heuristic based on accuracy)
+        let sources = recentLocations.map { determineLocationSource($0) }
+
+        return sensorFusion.fuseLocations(recentLocations, sources: sources)
+    }
+
+    private func acceptLocation(_ clLocation: CLLocation, source: LocationSource? = nil) {
         locationsAccepted += 1
 
-        // Determine source based on available info
-        let source = determineLocationSource(clLocation)
+        // Determine source based on available info (or use provided)
+        let locationSource = source ?? determineLocationSource(clLocation)
 
         // Log the accepted location
         GeofenceLogger.logLocationUpdate(
             lat: clLocation.coordinate.latitude,
             lon: clLocation.coordinate.longitude,
             accuracy: clLocation.horizontalAccuracy,
-            source: source.rawValue,
+            source: locationSource.rawValue,
             accepted: true
         )
 
@@ -656,13 +1267,18 @@ class PrecisionLocationManager: NSObject, ObservableObject {
             course: clLocation.course >= 0 ? clLocation.course : nil,
             speed: clLocation.speed >= 0 ? clLocation.speed : nil,
             timestamp: clLocation.timestamp,
-            source: source,
+            source: locationSource,
             floor: floorLevel
         )
 
         // Apply Kalman smoothing if enabled
         if enableSmoothing {
             precisionLocation = smoother.smooth(precisionLocation)
+        }
+
+        // Track speed for driving detection
+        if clLocation.speed >= 0 {
+            updateSpeedTracking(clLocation.speed, coordinate: clLocation.coordinate)
         }
 
         // Update state

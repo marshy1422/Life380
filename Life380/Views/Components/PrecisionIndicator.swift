@@ -14,10 +14,12 @@ struct ConfidenceRing: View {
             return .gray.opacity(0.4)
         }
         switch confidence {
+        case .excellent:
+            return .green.opacity(0.35)
         case .high:
-            return .green.opacity(0.3)
+            return .blue.opacity(0.3)
         case .medium:
-            return .blue.opacity(0.25)
+            return .teal.opacity(0.25)
         case .low:
             return .orange.opacity(0.25)
         case .approximate:
@@ -30,10 +32,12 @@ struct ConfidenceRing: View {
             return .gray.opacity(0.6)
         }
         switch confidence {
+        case .excellent:
+            return .green.opacity(0.7)
         case .high:
-            return .green.opacity(0.6)
+            return .blue.opacity(0.6)
         case .medium:
-            return .blue.opacity(0.5)
+            return .teal.opacity(0.5)
         case .low:
             return .orange.opacity(0.5)
         case .approximate:
@@ -59,16 +63,20 @@ struct PrecisionBadge: View {
     let source: LocationSource
     let isStale: Bool
     var compact: Bool = false
+    var showAccuracy: Bool = false
+    var accuracy: Double? = nil
 
     var backgroundColor: Color {
         if isStale {
             return .gray
         }
         switch confidence {
-        case .high:
+        case .excellent:
             return .green
-        case .medium:
+        case .high:
             return .blue
+        case .medium:
+            return .teal
         case .low:
             return .orange
         case .approximate:
@@ -82,8 +90,16 @@ struct PrecisionBadge: View {
                 .font(.system(size: compact ? 10 : 12, weight: .semibold))
 
             if !compact {
-                Text(isStale ? "Updating..." : confidence.displayName)
-                    .font(.system(size: 11, weight: .medium))
+                if isStale {
+                    Text("Updating...")
+                        .font(.system(size: 11, weight: .medium))
+                } else if showAccuracy, let acc = accuracy {
+                    Text("±\(Int(acc))m")
+                        .font(.system(size: 11, weight: .medium))
+                } else {
+                    Text(confidence.displayName)
+                        .font(.system(size: 11, weight: .medium))
+                }
             }
         }
         .foregroundColor(.white)
@@ -95,6 +111,90 @@ struct PrecisionBadge: View {
         )
         .animation(.easeInOut(duration: 0.2), value: confidence)
         .animation(.easeInOut(duration: 0.2), value: isStale)
+    }
+}
+
+// MARK: - Confidence Score Bar
+
+/// Visual bar showing location confidence as a score
+struct ConfidenceScoreBar: View {
+    let confidence: LocationConfidence
+    let isStale: Bool
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            HStack {
+                Text("Signal Quality")
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+                Spacer()
+                Text(confidence.displayName)
+                    .font(.caption2.bold())
+                    .foregroundColor(isStale ? .gray : confidenceColor)
+            }
+
+            GeometryReader { geo in
+                ZStack(alignment: .leading) {
+                    // Background
+                    RoundedRectangle(cornerRadius: 3)
+                        .fill(Color.gray.opacity(0.2))
+
+                    // Filled portion
+                    RoundedRectangle(cornerRadius: 3)
+                        .fill(isStale ? Color.gray : confidenceColor)
+                        .frame(width: geo.size.width * CGFloat(confidence.score) / 100)
+                }
+            }
+            .frame(height: 6)
+        }
+    }
+
+    var confidenceColor: Color {
+        switch confidence {
+        case .excellent: return .green
+        case .high: return .blue
+        case .medium: return .teal
+        case .low: return .orange
+        case .approximate: return .red
+        }
+    }
+}
+
+// MARK: - Signal Strength Indicator
+
+/// Shows location signal strength like WiFi bars
+struct SignalStrengthIndicator: View {
+    let confidence: LocationConfidence
+    let isStale: Bool
+
+    private var activeBars: Int {
+        switch confidence {
+        case .excellent: return 4
+        case .high: return 3
+        case .medium: return 2
+        case .low: return 1
+        case .approximate: return 0
+        }
+    }
+
+    var body: some View {
+        HStack(spacing: 2) {
+            ForEach(0..<4) { index in
+                RoundedRectangle(cornerRadius: 1)
+                    .fill(index < activeBars && !isStale ? barColor : Color.gray.opacity(0.3))
+                    .frame(width: 4, height: CGFloat(6 + index * 4))
+            }
+        }
+    }
+
+    var barColor: Color {
+        switch confidence {
+        case .excellent: return .green
+        case .high: return .blue
+        case .medium: return .teal
+        case .low: return .orange
+        case .approximate: return .red
+        }
     }
 }
 
@@ -114,12 +214,16 @@ struct PrecisionDot: View {
             return .gray
         }
         switch location.confidence {
-        case .high:
+        case .excellent:
             return .green
-        case .medium:
+        case .high:
             return .blue
-        case .low, .approximate:
+        case .medium:
+            return .teal
+        case .low:
             return .orange
+        case .approximate:
+            return .red
         }
     }
 

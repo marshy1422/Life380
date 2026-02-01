@@ -3,6 +3,7 @@ import AuthenticationServices
 
 struct SignUpView: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.colorScheme) var colorScheme
     @EnvironmentObject var authService: AuthenticationService
 
     @State private var displayName = ""
@@ -117,7 +118,7 @@ struct SignUpView: View {
                             authService.errorMessage = error.localizedDescription
                         }
                     }
-                    .signInWithAppleButtonStyle(.black)
+                    .signInWithAppleButtonStyle(.adaptive(for: colorScheme))
                     .frame(height: 50)
                 } header: {
                     Text("Or sign up with")

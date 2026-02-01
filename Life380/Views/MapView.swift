@@ -464,12 +464,65 @@ struct MemberDetailCard: View {
     let member: UserProfile
     @EnvironmentObject var firestoreService: FirestoreService
     @State private var etas: [ETAResult] = []
+    @State private var addressText: String = "Loading address..."
+    @State private var isLoadingAddress: Bool = true
+    @State private var showAllETAs: Bool = false
     let onDismiss: () -> Void
 
+    private var activityStatus: (icon: String, text: String, color: Color) {
+        // Determine activity based on speed/movement
+        let timeSinceUpdate = Date().timeIntervalSince(member.lastUpdated)
+
+        if timeSinceUpdate > 600 { // 10+ minutes stale
+            return ("moon.zzz.fill", "Inactive", .secondary)
+        } else if timeSinceUpdate > 300 { // 5+ minutes
+            return ("pause.circle.fill", "Idle", .orange)
+        } else {
+            // Active - assume stationary unless we have speed data
+            return ("checkmark.circle.fill", "Active", .green)
+        }
+    }
+
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            // Header row
-            HStack(spacing: 16) {
+        VStack(alignment: .leading, spacing: 0) {
+            // Header with dismiss button
+            headerSection
+
+            Divider()
+                .padding(.vertical, 12)
+
+            // Location & Address section
+            if member.isLocationSharing {
+                locationSection
+
+                // Quick actions
+                quickActionsSection
+
+                // ETA section (if places exist)
+                if !etas.isEmpty {
+                    Divider()
+                        .padding(.vertical, 12)
+                    etaSection
+                }
+            } else {
+                locationSharingOffSection
+            }
+        }
+        .padding()
+        .background(Color(.systemBackground))
+        .cornerRadius(20)
+        .shadow(color: Color.black.opacity(0.15), radius: 12, x: 0, y: 4)
+        .task {
+            await loadData()
+        }
+    }
+
+    // MARK: - Header Section
+
+    private var headerSection: some View {
+        HStack(spacing: 14) {
+            // Avatar with activity indicator
+            ZStack(alignment: .bottomTrailing) {
                 Text(member.initials)
                     .font(.title2.bold())
                     .foregroundColor(.white)
@@ -477,63 +530,311 @@ struct MemberDetailCard: View {
                     .background(member.color)
                     .clipShape(Circle())
 
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(member.displayName)
-                        .font(.headline)
+                // Activity status dot
+                Circle()
+                    .fill(activityStatus.color)
+                    .frame(width: 16, height: 16)
+                    .overlay(
+                        Circle()
+                            .stroke(Color(.systemBackground), lineWidth: 2)
+                    )
+            }
 
-                    if member.isLocationSharing {
+            VStack(alignment: .leading, spacing: 4) {
+                Text(member.displayName)
+                    .font(.headline)
+                    .foregroundColor(.primary)
+
+                HStack(spacing: 6) {
+                    Image(systemName: activityStatus.icon)
+                        .font(.caption)
+                        .foregroundColor(activityStatus.color)
+                    Text(activityStatus.text)
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    Text("•")
+                        .foregroundColor(.secondary)
+                    Text(member.lastUpdatedText)
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+            }
+
+            Spacer()
+
+            // Battery indicator
+            VStack(spacing: 2) {
+                ZStack {
+                    Circle()
+                        .stroke(Color(.systemGray5), lineWidth: 3)
+                        .frame(width: 36, height: 36)
+                    Circle()
+                        .trim(from: 0, to: CGFloat(member.batteryLevel) / 100)
+                        .stroke(member.batteryColor, style: StrokeStyle(lineWidth: 3, lineCap: .round))
+                        .frame(width: 36, height: 36)
+                        .rotationEffect(.degrees(-90))
+                    Text("\(member.batteryLevel)")
+                        .font(.system(size: 10, weight: .semibold))
+                        .foregroundColor(.primary)
+                }
+                Text("Battery")
+                    .font(.system(size: 8))
+                    .foregroundColor(.secondary)
+            }
+
+            Button(action: onDismiss) {
+                Image(systemName: "xmark.circle.fill")
+                    .font(.title2)
+                    .foregroundColor(Color(.systemGray3))
+            }
+        }
+    }
+
+    // MARK: - Location Section
+
+    private var locationSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 10) {
+                Image(systemName: "mappin.circle.fill")
+                    .font(.system(size: 20))
+                    .foregroundColor(.red)
+
+                VStack(alignment: .leading, spacing: 2) {
+                    if isLoadingAddress {
+                        HStack(spacing: 6) {
+                            ProgressView()
+                                .scaleEffect(0.7)
+                            Text("Finding address...")
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                        }
+                    } else {
+                        Text(addressText)
+                            .font(.subheadline)
+                            .foregroundColor(.primary)
+                            .lineLimit(2)
+                    }
+
+                    // Accuracy indicator
+                    if let accuracy = member.horizontalAccuracy {
                         HStack(spacing: 4) {
-                            Image(systemName: "clock")
-                                .font(.caption)
-                            Text(member.lastUpdatedText)
-                                .font(.caption)
+                            Image(systemName: accuracyIcon(for: accuracy))
+                                .font(.caption2)
+                            Text(accuracyText(for: accuracy))
+                                .font(.caption2)
+                        }
+                        .foregroundColor(accuracyColor(for: accuracy))
+                    }
+
+                    // Floor info
+                    if let floorText = member.floorDisplayName {
+                        HStack(spacing: 4) {
+                            Image(systemName: "building.2")
+                                .font(.caption2)
+                            Text(floorText)
+                                .font(.caption2)
                         }
                         .foregroundColor(.secondary)
-                    } else {
-                        Text("Location sharing off")
-                            .font(.caption)
-                            .foregroundColor(.orange)
                     }
                 }
 
                 Spacer()
+            }
+        }
+    }
 
+    // MARK: - Quick Actions
+
+    private var quickActionsSection: some View {
+        HStack(spacing: 12) {
+            // Directions button
+            Button(action: openDirections) {
                 VStack(spacing: 4) {
-                    Image(systemName: member.batteryIcon)
-                        .foregroundColor(member.batteryColor)
-                    Text("\(member.batteryLevel)%")
+                    Image(systemName: "arrow.triangle.turn.up.right.circle.fill")
+                        .font(.system(size: 28))
+                        .foregroundColor(.blue)
+                    Text("Directions")
                         .font(.caption2)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(.primary)
                 }
-
-                Button(action: onDismiss) {
-                    Image(systemName: "xmark.circle.fill")
-                        .foregroundColor(.secondary)
-                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 12)
+                .background(Color(.systemGray6))
+                .cornerRadius(12)
             }
 
-            // ETA section (if places exist)
-            if !etas.isEmpty {
-                Divider()
+            // Call button
+            Button(action: makeCall) {
+                VStack(spacing: 4) {
+                    Image(systemName: "phone.circle.fill")
+                        .font(.system(size: 28))
+                        .foregroundColor(.green)
+                    Text("Call")
+                        .font(.caption2)
+                        .foregroundColor(.primary)
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 12)
+                .background(Color(.systemGray6))
+                .cornerRadius(12)
+            }
 
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("Estimated Arrival")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
+            // Message button
+            Button(action: sendMessage) {
+                VStack(spacing: 4) {
+                    Image(systemName: "message.circle.fill")
+                        .font(.system(size: 28))
+                        .foregroundColor(.orange)
+                    Text("Message")
+                        .font(.caption2)
+                        .foregroundColor(.primary)
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 12)
+                .background(Color(.systemGray6))
+                .cornerRadius(12)
+            }
 
-                    ForEach(etas.prefix(2)) { eta in
-                        ETARow(eta: eta)
+            // History button
+            NavigationLink(destination: LocationHistoryView(memberId: member.id, memberName: member.displayName)) {
+                VStack(spacing: 4) {
+                    Image(systemName: "clock.arrow.circlepath")
+                        .font(.system(size: 28))
+                        .foregroundColor(.purple)
+                    Text("History")
+                        .font(.caption2)
+                        .foregroundColor(.primary)
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 12)
+                .background(Color(.systemGray6))
+                .cornerRadius(12)
+            }
+        }
+        .padding(.top, 12)
+    }
+
+    // MARK: - ETA Section
+
+    private var etaSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack {
+                Text("Arrival Times")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundColor(.primary)
+
+                Spacer()
+
+                if etas.count > 2 {
+                    Button(action: { withAnimation { showAllETAs.toggle() } }) {
+                        Text(showAllETAs ? "Show Less" : "Show All")
+                            .font(.caption)
+                            .foregroundColor(.blue)
                     }
                 }
             }
+
+            ForEach(showAllETAs ? etas : Array(etas.prefix(2))) { eta in
+                EnhancedETARow(eta: eta)
+            }
         }
-        .padding()
-        .background(Color(.systemBackground))
-        .cornerRadius(16)
-        .shadow(radius: 8)
-        .task {
-            await calculateETAs()
+    }
+
+    // MARK: - Location Sharing Off
+
+    private var locationSharingOffSection: some View {
+        VStack(spacing: 12) {
+            Image(systemName: "location.slash.fill")
+                .font(.system(size: 40))
+                .foregroundColor(.orange)
+
+            Text("Location sharing is off")
+                .font(.subheadline)
+                .foregroundColor(.secondary)
+
+            Text("\(member.displayName) has disabled location sharing")
+                .font(.caption)
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)
         }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 20)
+    }
+
+    // MARK: - Actions
+
+    private func openDirections() {
+        let coordinate = member.coordinate
+        let mapItem = MKMapItem(placemark: MKPlacemark(coordinate: coordinate))
+        mapItem.name = member.displayName
+        mapItem.openInMaps(launchOptions: [
+            MKLaunchOptionsDirectionsModeKey: MKLaunchOptionsDirectionsModeDriving
+        ])
+    }
+
+    private func makeCall() {
+        // In a real app, you'd store phone numbers in UserProfile
+        // For now, we'll show an alert or use a placeholder
+        if let url = URL(string: "tel://"), UIApplication.shared.canOpenURL(url) {
+            // Would open phone app - in production, use actual phone number
+        }
+    }
+
+    private func sendMessage() {
+        // In a real app, you'd open Messages with the member's phone number
+        if let url = URL(string: "sms://"), UIApplication.shared.canOpenURL(url) {
+            // Would open Messages app - in production, use actual phone number
+        }
+    }
+
+    // MARK: - Data Loading
+
+    private func loadData() async {
+        async let addressTask: () = lookupAddress()
+        async let etaTask: () = calculateETAs()
+        _ = await (addressTask, etaTask)
+    }
+
+    private func lookupAddress() async {
+        let geocoder = CLGeocoder()
+        let location = CLLocation(latitude: member.latitude, longitude: member.longitude)
+
+        do {
+            let placemarks = try await geocoder.reverseGeocodeLocation(location)
+            if let placemark = placemarks.first {
+                await MainActor.run {
+                    addressText = formatAddress(placemark)
+                    isLoadingAddress = false
+                }
+            }
+        } catch {
+            await MainActor.run {
+                addressText = String(format: "%.4f, %.4f", member.latitude, member.longitude)
+                isLoadingAddress = false
+            }
+        }
+    }
+
+    private func formatAddress(_ placemark: CLPlacemark) -> String {
+        var components: [String] = []
+
+        if let name = placemark.name, !name.contains(placemark.thoroughfare ?? "") {
+            components.append(name)
+        }
+
+        if let street = placemark.thoroughfare {
+            if let number = placemark.subThoroughfare {
+                components.append("\(number) \(street)")
+            } else {
+                components.append(street)
+            }
+        }
+
+        if let city = placemark.locality {
+            components.append(city)
+        }
+
+        return components.prefix(2).joined(separator: ", ")
     }
 
     private func calculateETAs() async {
@@ -541,7 +842,6 @@ struct MemberDetailCard: View {
               let accuracy = member.horizontalAccuracy,
               accuracy < 100 else { return }
 
-        // Create a PrecisionLocation from member data
         let location = PrecisionLocation(
             latitude: member.latitude,
             longitude: member.longitude,
@@ -549,10 +849,106 @@ struct MemberDetailCard: View {
             source: .fused
         )
 
-        etas = await ETAService.shared.calculateETAsToAllPlaces(
+        let results = await ETAService.shared.calculateETAsToAllPlaces(
             from: location,
             places: firestoreService.places
         )
+
+        await MainActor.run {
+            etas = results
+        }
+    }
+
+    // MARK: - Helpers
+
+    private func accuracyIcon(for accuracy: Double) -> String {
+        if accuracy < 10 { return "target" }
+        if accuracy < 30 { return "scope" }
+        if accuracy < 100 { return "circle.dashed" }
+        return "questionmark.circle"
+    }
+
+    private func accuracyText(for accuracy: Double) -> String {
+        if accuracy < 10 { return "Precise (±\(Int(accuracy))m)" }
+        if accuracy < 30 { return "Good (±\(Int(accuracy))m)" }
+        if accuracy < 100 { return "Approximate (±\(Int(accuracy))m)" }
+        return "Low accuracy (±\(Int(accuracy))m)"
+    }
+
+    private func accuracyColor(for accuracy: Double) -> Color {
+        if accuracy < 10 { return .green }
+        if accuracy < 30 { return .blue }
+        if accuracy < 100 { return .orange }
+        return .red
+    }
+}
+
+// MARK: - Enhanced ETA Row
+
+struct EnhancedETARow: View {
+    let eta: ETAResult
+
+    var body: some View {
+        HStack(spacing: 12) {
+            // Place icon
+            Image(systemName: eta.place.icon)
+                .font(.system(size: 14))
+                .foregroundColor(eta.place.color)
+                .frame(width: 28, height: 28)
+                .background(eta.place.color.opacity(0.15))
+                .clipShape(Circle())
+
+            // Place name and distance
+            VStack(alignment: .leading, spacing: 2) {
+                Text(eta.place.name)
+                    .font(.subheadline.weight(.medium))
+                    .foregroundColor(.primary)
+
+                HStack(spacing: 4) {
+                    Text(eta.distanceText)
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+
+                    if let traffic = eta.trafficCondition, traffic != .unknown {
+                        Text("•")
+                            .foregroundColor(.secondary)
+                        HStack(spacing: 2) {
+                            Circle()
+                                .fill(trafficColor(traffic))
+                                .frame(width: 6, height: 6)
+                            Text(traffic.rawValue.capitalized)
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                }
+            }
+
+            Spacer()
+
+            // ETA time
+            VStack(alignment: .trailing, spacing: 2) {
+                Text(eta.etaText)
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundColor(eta.isAlmostThere ? .green : .primary)
+
+                if let mode = eta.travelMode {
+                    Image(systemName: mode.icon)
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+            }
+        }
+        .padding(.vertical, 6)
+    }
+
+    private func trafficColor(_ condition: TrafficCondition) -> Color {
+        switch condition {
+        case .light: return .green
+        case .moderate: return .yellow
+        case .heavy: return .red
+        case .unknown: return .gray
+        }
     }
 }
 

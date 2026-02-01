@@ -3,11 +3,15 @@ import SwiftUI
 struct SettingsView: View {
     @EnvironmentObject var authService: AuthenticationService
     @EnvironmentObject var firestoreService: FirestoreService
+    @StateObject private var biometricService = BiometricAuthService.shared
 
     @AppStorage("locationSharing") private var locationSharing = true
     @AppStorage("ghostMode") private var ghostMode = false
     @AppStorage("notificationsEnabled") private var notificationsEnabled = true
     @AppStorage("batterySharing") private var batterySharing = true
+
+    @State private var showingBiometricAuth = false
+    @State private var pendingLocationSharingValue = true
 
     private var appVersion: String {
         Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0.0"
@@ -60,12 +64,21 @@ struct SettingsView: View {
 
                 // Location Settings
                 Section("Location") {
-                    Toggle("Location Sharing", isOn: $locationSharing)
-                        .onChange(of: locationSharing) { _, newValue in
-                            Task {
-                                try? await firestoreService.updateUserProfile(isLocationSharing: newValue)
+                    Toggle("Location Sharing", isOn: Binding(
+                        get: { locationSharing },
+                        set: { newValue in
+                            // Check if biometric auth is required
+                            if biometricService.isAuthRequired(for: .toggleLocationSharing) && !biometricService.isAuthenticationValid {
+                                pendingLocationSharingValue = newValue
+                                showingBiometricAuth = true
+                            } else {
+                                locationSharing = newValue
+                                Task {
+                                    try? await firestoreService.updateUserProfile(isLocationSharing: newValue)
+                                }
                             }
                         }
+                    ))
 
                     Toggle("Ghost Mode", isOn: $ghostMode)
 
@@ -102,6 +115,9 @@ struct SettingsView: View {
                         Text("Privacy Settings")
                     }
                 }
+
+                // Security
+                BiometricSettingsView()
 
                 // Circles
                 Section("My Circles") {
@@ -213,6 +229,19 @@ struct SettingsView: View {
                 }
             }
             .navigationTitle("Settings")
+            .task(id: showingBiometricAuth) {
+                guard showingBiometricAuth else { return }
+                let success = await biometricService.authenticate(
+                    reason: "Authenticate to change location sharing"
+                )
+                if success {
+                    locationSharing = pendingLocationSharingValue
+                    Task {
+                        try? await firestoreService.updateUserProfile(isLocationSharing: pendingLocationSharingValue)
+                    }
+                }
+                showingBiometricAuth = false
+            }
         }
     }
 }

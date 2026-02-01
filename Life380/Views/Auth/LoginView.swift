@@ -3,6 +3,7 @@ import AuthenticationServices
 
 struct LoginView: View {
     @EnvironmentObject var authService: AuthenticationService
+    @Environment(\.colorScheme) var colorScheme
     @State private var email = ""
     @State private var password = ""
     @State private var showingSignUp = false
@@ -226,7 +227,7 @@ struct LoginView: View {
                     authService.errorMessage = error.localizedDescription
                 }
             }
-            .signInWithAppleButtonStyle(.black)
+            .signInWithAppleButtonStyle(.adaptive(for: colorScheme))
             .frame(height: 56)
             .clipShape(RoundedRectangle(cornerRadius: AppTheme.Radius.md, style: .continuous))
         }

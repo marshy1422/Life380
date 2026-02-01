@@ -190,8 +190,9 @@ private struct LocationStatusRow: View {
 
     var confidenceColor: Color {
         switch location.confidence {
-        case .high: return .green
-        case .medium: return .blue
+        case .excellent: return .green
+        case .high: return .blue
+        case .medium: return .teal
         case .low: return .orange
         case .approximate: return .red
         }

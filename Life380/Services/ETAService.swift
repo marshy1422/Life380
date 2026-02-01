@@ -5,6 +5,41 @@ import os.log
 
 private let logger = Logger(subsystem: "com.life380.app", category: "ETA")
 
+/// Traffic condition for driving ETAs
+enum TrafficCondition: String {
+    case light = "light"
+    case moderate = "moderate"
+    case heavy = "heavy"
+    case unknown = "unknown"
+
+    var icon: String {
+        switch self {
+        case .light: return "car.fill"
+        case .moderate: return "car.2.fill"
+        case .heavy: return "exclamationmark.triangle.fill"
+        case .unknown: return "questionmark.circle"
+        }
+    }
+
+    var color: String {
+        switch self {
+        case .light: return "green"
+        case .moderate: return "yellow"
+        case .heavy: return "red"
+        case .unknown: return "gray"
+        }
+    }
+
+    var description: String {
+        switch self {
+        case .light: return "Light traffic"
+        case .moderate: return "Moderate traffic"
+        case .heavy: return "Heavy traffic"
+        case .unknown: return "Traffic unknown"
+        }
+    }
+}
+
 /// Represents an estimated time of arrival
 struct ETAResult: Identifiable {
     let id = UUID()
@@ -14,6 +49,8 @@ struct ETAResult: Identifiable {
     let calculationMethod: ETAMethod
     let confidence: ETAConfidence
     let timestamp: Date
+    var travelMode: TravelMode?
+    var trafficCondition: TrafficCondition?
 
     var etaDate: Date {
         Date().addingTimeInterval(eta)
@@ -49,6 +86,15 @@ struct ETAResult: Identifiable {
     var hasArrived: Bool {
         eta <= 60
     }
+
+    /// Detailed ETA text with traffic info
+    var detailedEtaText: String {
+        var text = etaText
+        if let traffic = trafficCondition, traffic != .unknown {
+            text += " (\(traffic.description.lowercased()))"
+        }
+        return text
+    }
 }
 
 enum ETAMethod: String {
@@ -56,6 +102,7 @@ enum ETAMethod: String {
     case mapKit = "mapkit"         // MapKit directions API
     case cached = "cached"         // Cached route from previous calculation
     case historical = "historical" // Based on historical patterns (future)
+    case hybrid = "hybrid"         // Combination of methods
 }
 
 enum ETAConfidence: String {
@@ -68,6 +115,50 @@ enum ETAConfidence: String {
         case .high: return "green"
         case .medium: return "blue"
         case .low: return "orange"
+        }
+    }
+}
+
+enum TravelMode: String, CaseIterable {
+    case walking = "walking"
+    case cycling = "cycling"
+    case driving = "driving"
+    case transit = "transit"
+
+    var icon: String {
+        switch self {
+        case .walking: return "figure.walk"
+        case .cycling: return "bicycle"
+        case .driving: return "car.fill"
+        case .transit: return "tram.fill"
+        }
+    }
+
+    var averageSpeed: Double { // m/s
+        switch self {
+        case .walking: return 1.4    // ~5 km/h
+        case .cycling: return 5.5    // ~20 km/h
+        case .driving: return 11.1   // ~40 km/h (urban average)
+        case .transit: return 8.3    // ~30 km/h
+        }
+    }
+
+    var mapKitTransportType: MKDirectionsTransportType {
+        switch self {
+        case .walking: return .walking
+        case .cycling: return .walking // MapKit doesn't have cycling
+        case .driving: return .automobile
+        case .transit: return .transit
+        }
+    }
+
+    /// Detect travel mode from speed
+    static func detect(fromSpeed speed: Double) -> TravelMode {
+        switch speed {
+        case ..<2.5: return .walking
+        case 2.5..<8: return .cycling
+        case 8..<50: return .driving
+        default: return .driving
         }
     }
 }
@@ -101,32 +192,67 @@ class ETAService: ObservableObject {
     func calculateETA(
         from location: PrecisionLocation,
         to place: Place,
-        currentSpeed: Double? = nil
+        currentSpeed: Double? = nil,
+        preferredMode: TravelMode? = nil
     ) async -> ETAResult {
         let fromCoord = location.coordinate
         let toCoord = place.coordinate
         let distance = self.distance(from: fromCoord, to: toCoord)
 
-        // Determine speed - use provided speed or infer from location
+        // Determine speed and travel mode
         let speed = currentSpeed ?? location.speed ?? 0
+        let detectedMode = TravelMode.detect(fromSpeed: speed)
+        let travelMode = preferredMode ?? detectedMode
 
-        // Choose calculation method based on speed
-        if speed > drivingSpeedThreshold {
-            // Driving - try MapKit first
-            if let mapKitETA = await calculateMapKitETA(from: fromCoord, to: toCoord, placeId: place.id) {
+        // For driving, try MapKit with traffic
+        if travelMode == .driving && speed > drivingSpeedThreshold {
+            if let mapKitETA = await calculateMapKitETAWithTraffic(
+                from: fromCoord,
+                to: toCoord,
+                placeId: place.id,
+                transportType: .automobile
+            ) {
                 return ETAResult(
                     place: place,
-                    eta: mapKitETA,
+                    eta: mapKitETA.eta,
                     distance: distance,
                     calculationMethod: .mapKit,
                     confidence: .high,
-                    timestamp: Date()
+                    timestamp: Date(),
+                    travelMode: travelMode,
+                    trafficCondition: mapKitETA.trafficCondition
+                )
+            }
+        }
+
+        // For walking/cycling, use MapKit walking directions
+        if travelMode == .walking || travelMode == .cycling {
+            if let mapKitETA = await calculateMapKitETA(
+                from: fromCoord,
+                to: toCoord,
+                placeId: place.id,
+                transportType: .walking
+            ) {
+                // Adjust for cycling (faster than walking)
+                let adjustedETA = travelMode == .cycling ? mapKitETA * 0.4 : mapKitETA
+
+                return ETAResult(
+                    place: place,
+                    eta: adjustedETA,
+                    distance: distance,
+                    calculationMethod: .mapKit,
+                    confidence: .high,
+                    timestamp: Date(),
+                    travelMode: travelMode
                 )
             }
         }
 
         // Fall back to speed-based calculation
-        let speedBasedETA = calculateSpeedBasedETA(distance: distance, speed: speed)
+        let speedBasedETA = calculateSpeedBasedETA(
+            distance: distance,
+            speed: speed > 0.5 ? speed : travelMode.averageSpeed
+        )
         let confidence: ETAConfidence = speed > 1 ? .medium : .low
 
         return ETAResult(
@@ -135,8 +261,65 @@ class ETAService: ObservableObject {
             distance: distance,
             calculationMethod: .speedBased,
             confidence: confidence,
-            timestamp: Date()
+            timestamp: Date(),
+            travelMode: travelMode
         )
+    }
+
+    // MARK: - Traffic-Aware MapKit ETA
+
+    private func calculateMapKitETAWithTraffic(
+        from: CLLocationCoordinate2D,
+        to: CLLocationCoordinate2D,
+        placeId: String,
+        transportType: MKDirectionsTransportType
+    ) async -> (eta: TimeInterval, trafficCondition: TrafficCondition)? {
+        let cacheKey = "\(placeId)_\(Int(from.latitude * 1000))_\(Int(from.longitude * 1000))_traffic"
+
+        // Check cache first
+        if let cached = routeCache[cacheKey], !cached.isExpired {
+            return (cached.eta, cached.trafficCondition ?? .unknown)
+        }
+
+        let request = MKDirections.Request()
+        request.source = MKMapItem(placemark: MKPlacemark(coordinate: from))
+        request.destination = MKMapItem(placemark: MKPlacemark(coordinate: to))
+        request.transportType = transportType
+        request.requestsAlternateRoutes = false
+        request.departureDate = Date() // Current time for traffic
+
+        let directions = MKDirections(request: request)
+
+        do {
+            let response = try await directions.calculateETA()
+            let eta = response.expectedTravelTime
+
+            // Determine traffic condition by comparing expected vs base travel time
+            let baseTime = response.distance / 13.9 // ~50 km/h base speed
+            let trafficRatio = eta / baseTime
+            let trafficCondition: TrafficCondition
+            if trafficRatio < 1.2 {
+                trafficCondition = .light
+            } else if trafficRatio < 1.5 {
+                trafficCondition = .moderate
+            } else {
+                trafficCondition = .heavy
+            }
+
+            // Cache the result
+            routeCache[cacheKey] = CachedRoute(
+                eta: eta,
+                distance: response.distance,
+                timestamp: Date(),
+                trafficCondition: trafficCondition
+            )
+
+            logger.info("Traffic-aware ETA to \(placeId): \(Int(eta))s, traffic: \(trafficCondition.rawValue)")
+            return (eta, trafficCondition)
+        } catch {
+            logger.error("Traffic ETA failed: \(error.localizedDescription)")
+            return nil
+        }
     }
 
     /// Calculate ETAs from a user to all saved places
@@ -182,9 +365,10 @@ class ETAService: ObservableObject {
     private func calculateMapKitETA(
         from: CLLocationCoordinate2D,
         to: CLLocationCoordinate2D,
-        placeId: String
+        placeId: String,
+        transportType: MKDirectionsTransportType = .automobile
     ) async -> TimeInterval? {
-        let cacheKey = "\(placeId)_\(Int(from.latitude * 1000))_\(Int(from.longitude * 1000))"
+        let cacheKey = "\(placeId)_\(Int(from.latitude * 1000))_\(Int(from.longitude * 1000))_\(transportType.rawValue)"
 
         // Check cache first
         if let cached = routeCache[cacheKey], !cached.isExpired {
@@ -281,6 +465,7 @@ private struct CachedRoute {
     let eta: TimeInterval
     let distance: Double
     let timestamp: Date
+    var trafficCondition: TrafficCondition?
 
     var isExpired: Bool {
         isExpired(at: Date())

@@ -1,4 +1,6 @@
 import SwiftUI
+import UIKit
+import AuthenticationServices
 
 // MARK: - App Theme
 struct AppTheme {
@@ -13,12 +15,43 @@ struct AppTheme {
         static let warning = Color(red: 0.96, green: 0.62, blue: 0.04)
         static let error = Color(red: 0.94, green: 0.27, blue: 0.27)
 
+        // Adaptive colors for dark mode (use in View context)
+        static var cardBackground: Color { Color(UIColor.systemBackground) }
+        static var secondaryCardBackground: Color { Color(UIColor.secondarySystemBackground) }
+        static var tertiaryCardBackground: Color { Color(UIColor.tertiarySystemBackground) }
+        static var groupedBackground: Color { Color(UIColor.systemGroupedBackground) }
+        static var secondaryGroupedBackground: Color { Color(UIColor.secondarySystemGroupedBackground) }
+
+        // Text colors (adaptive)
+        static var primaryText: Color { Color(UIColor.label) }
+        static var secondaryText: Color { Color(UIColor.secondaryLabel) }
+        static var tertiaryText: Color { Color(UIColor.tertiaryLabel) }
+
+        // Separator colors
+        static var separator: Color { Color(UIColor.separator) }
+        static var opaqueSeparator: Color { Color(UIColor.opaqueSeparator) }
+
         // Gradient presets
         static let primaryGradient = LinearGradient(
             colors: [primaryGradientStart, primaryGradientEnd],
             startPoint: .topLeading,
             endPoint: .bottomTrailing
         )
+
+        // Dark mode aware gradient
+        static func adaptiveGradient(for colorScheme: ColorScheme) -> LinearGradient {
+            if colorScheme == .dark {
+                return LinearGradient(
+                    colors: [
+                        primaryGradientStart.opacity(0.8),
+                        primaryGradientEnd.opacity(0.7)
+                    ],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+            }
+            return primaryGradient
+        }
     }
 
     // MARK: - Typography
@@ -118,6 +151,85 @@ struct SecondaryButtonStyle: ButtonStyle {
     }
 }
 
+// MARK: - Adaptive Card Style
+struct AdaptiveCardStyle: ViewModifier {
+    @Environment(\.colorScheme) var colorScheme
+
+    var elevated: Bool = false
+
+    func body(content: Content) -> some View {
+        content
+            .background(
+                RoundedRectangle(cornerRadius: AppTheme.Radius.lg, style: .continuous)
+                    .fill(colorScheme == .dark
+                          ? Color(.secondarySystemBackground)
+                          : Color(.systemBackground))
+                    .shadow(
+                        color: colorScheme == .dark
+                            ? .clear
+                            : .black.opacity(elevated ? 0.12 : 0.06),
+                        radius: elevated ? 16 : 8,
+                        x: 0,
+                        y: elevated ? 8 : 4
+                    )
+            )
+    }
+}
+
+// MARK: - Dark Mode Aware Badge Style
+struct AdaptiveBadgeStyle: ViewModifier {
+    @Environment(\.colorScheme) var colorScheme
+    let color: Color
+
+    func body(content: Content) -> some View {
+        content
+            .foregroundColor(colorScheme == .dark ? color : .white)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 6)
+            .background(
+                Capsule()
+                    .fill(colorScheme == .dark ? color.opacity(0.2) : color)
+            )
+            .overlay(
+                Capsule()
+                    .strokeBorder(color.opacity(colorScheme == .dark ? 0.4 : 0), lineWidth: 1)
+            )
+    }
+}
+
+// MARK: - Adaptive List Row Style
+struct AdaptiveListRowStyle: ViewModifier {
+    @Environment(\.colorScheme) var colorScheme
+
+    func body(content: Content) -> some View {
+        content
+            .listRowBackground(
+                colorScheme == .dark
+                    ? Color(.secondarySystemGroupedBackground)
+                    : Color(.systemBackground)
+            )
+            .listRowSeparatorTint(colorScheme == .dark ? .gray.opacity(0.3) : nil)
+    }
+}
+
+// MARK: - Adaptive Icon Background
+struct AdaptiveIconBackground: ViewModifier {
+    @Environment(\.colorScheme) var colorScheme
+    let color: Color
+
+    func body(content: Content) -> some View {
+        content
+            .foregroundColor(color)
+            .padding(10)
+            .background(
+                Circle()
+                    .fill(colorScheme == .dark
+                          ? color.opacity(0.15)
+                          : color.opacity(0.12))
+            )
+    }
+}
+
 // MARK: - View Extensions
 extension View {
     func cardStyle() -> some View {
@@ -126,5 +238,35 @@ extension View {
 
     func glassCard() -> some View {
         modifier(GlassCard())
+    }
+
+    func adaptiveCard(elevated: Bool = false) -> some View {
+        modifier(AdaptiveCardStyle(elevated: elevated))
+    }
+
+    func adaptiveBadge(color: Color) -> some View {
+        modifier(AdaptiveBadgeStyle(color: color))
+    }
+
+    func adaptiveListRow() -> some View {
+        modifier(AdaptiveListRowStyle())
+    }
+
+    func adaptiveIconBackground(color: Color) -> some View {
+        modifier(AdaptiveIconBackground(color: color))
+    }
+}
+
+// MARK: - Color Scheme Helper
+extension ColorScheme {
+    var isDark: Bool {
+        self == .dark
+    }
+}
+
+// MARK: - Adaptive Sign In With Apple Button Style
+extension SignInWithAppleButton.Style {
+    static func adaptive(for colorScheme: ColorScheme) -> SignInWithAppleButton.Style {
+        colorScheme == .dark ? .white : .black
     }
 }
