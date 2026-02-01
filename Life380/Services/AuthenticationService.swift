@@ -3,6 +3,7 @@ import FirebaseAuth
 import AuthenticationServices
 import CryptoKit
 import Combine
+import CoreLocation
 
 @MainActor
 class AuthenticationService: NSObject, ObservableObject {
@@ -28,7 +29,7 @@ class AuthenticationService: NSObject, ObservableObject {
 
     // MARK: - Email Authentication
 
-    func signUp(email: String, password: String, displayName: String) async {
+    func signUp(email: String, password: String, displayName: String, location: CLLocationCoordinate2D? = nil, accuracy: Double? = nil) async {
         isLoading = true
         errorMessage = nil
 
@@ -39,10 +40,14 @@ class AuthenticationService: NSObject, ObservableObject {
             changeRequest.displayName = displayName
             try await changeRequest.commitChanges()
 
+            // Create profile with location if available (avoids "Null Island" bug)
             try await FirestoreService.shared.createUserProfile(
                 userId: result.user.uid,
                 email: email,
-                displayName: displayName
+                displayName: displayName,
+                latitude: location?.latitude,
+                longitude: location?.longitude,
+                accuracy: accuracy
             )
 
         } catch {
@@ -88,7 +93,7 @@ class AuthenticationService: NSObject, ObservableObject {
 
     // MARK: - Sign in with Apple (Required by App Store)
 
-    func handleSignInWithApple(authorization: ASAuthorization) async {
+    func handleSignInWithApple(authorization: ASAuthorization, location: CLLocationCoordinate2D? = nil, accuracy: Double? = nil) async {
         isLoading = true
         errorMessage = nil
 
@@ -124,10 +129,14 @@ class AuthenticationService: NSObject, ObservableObject {
             // Check if user profile exists
             let profileExists = try await FirestoreService.shared.userProfileExists(userId: result.user.uid)
             if !profileExists {
+                // Create profile with location if available (avoids "Null Island" bug)
                 try await FirestoreService.shared.createUserProfile(
                     userId: result.user.uid,
                     email: email,
-                    displayName: displayName.isEmpty ? "User" : displayName
+                    displayName: displayName.isEmpty ? "User" : displayName,
+                    latitude: location?.latitude,
+                    longitude: location?.longitude,
+                    accuracy: accuracy
                 )
             }
         } catch {

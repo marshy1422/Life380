@@ -8,8 +8,8 @@ struct UserProfile: Identifiable, Codable {
     let email: String
     var displayName: String
     var photoURL: String?
-    var latitude: Double
-    var longitude: Double
+    var latitude: Double?  // Optional to avoid "Null Island" bug when location not yet available
+    var longitude: Double? // Optional to avoid "Null Island" bug when location not yet available
     var lastUpdated: Date
     var batteryLevel: Int
     var isLocationSharing: Bool
@@ -17,8 +17,17 @@ struct UserProfile: Identifiable, Codable {
     var horizontalAccuracy: Double?  // Precision tracking
     var floor: Int?                  // Floor level from barometer
 
-    var coordinate: CLLocationCoordinate2D {
-        CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
+    /// Returns coordinate if both latitude and longitude are available and valid (not 0,0)
+    var coordinate: CLLocationCoordinate2D? {
+        guard let lat = latitude, let lon = longitude else { return nil }
+        // Reject "Null Island" coordinates (0,0) as invalid
+        if lat == 0 && lon == 0 { return nil }
+        return CLLocationCoordinate2D(latitude: lat, longitude: lon)
+    }
+
+    /// Whether the user has a valid location available
+    var hasValidLocation: Bool {
+        coordinate != nil
     }
 
     var initials: String {
@@ -97,14 +106,19 @@ struct UserProfile: Identifiable, Codable {
             "id": id,
             "email": email,
             "displayName": displayName,
-            "latitude": latitude,
-            "longitude": longitude,
             "lastUpdated": lastUpdated,
             "batteryLevel": batteryLevel,
             "isLocationSharing": isLocationSharing
         ]
         if let photoURL = photoURL {
             dict["photoURL"] = photoURL
+        }
+        // Only include location if available (avoids storing 0,0 "Null Island")
+        if let latitude = latitude {
+            dict["latitude"] = latitude
+        }
+        if let longitude = longitude {
+            dict["longitude"] = longitude
         }
         dict["circleIds"] = circleIds
         if let horizontalAccuracy = horizontalAccuracy {
@@ -116,7 +130,7 @@ struct UserProfile: Identifiable, Codable {
         return dict
     }
 
-    init(id: String, email: String, displayName: String, photoURL: String?, latitude: Double, longitude: Double, lastUpdated: Date, batteryLevel: Int, isLocationSharing: Bool, circleIds: [String] = [], horizontalAccuracy: Double? = nil, floor: Int? = nil) {
+    init(id: String, email: String, displayName: String, photoURL: String? = nil, latitude: Double? = nil, longitude: Double? = nil, lastUpdated: Date = Date(), batteryLevel: Int = 100, isLocationSharing: Bool = true, circleIds: [String] = [], horizontalAccuracy: Double? = nil, floor: Int? = nil) {
         self.id = id
         self.email = email
         self.displayName = displayName
@@ -135,8 +149,6 @@ struct UserProfile: Identifiable, Codable {
         guard let id = dictionary["id"] as? String,
               let email = dictionary["email"] as? String,
               let displayName = dictionary["displayName"] as? String,
-              let latitude = dictionary["latitude"] as? Double,
-              let longitude = dictionary["longitude"] as? Double,
               let batteryLevel = dictionary["batteryLevel"] as? Int,
               let isLocationSharing = dictionary["isLocationSharing"] as? Bool else {
             return nil
@@ -146,8 +158,9 @@ struct UserProfile: Identifiable, Codable {
         self.email = email
         self.displayName = displayName
         self.photoURL = dictionary["photoURL"] as? String
-        self.latitude = latitude
-        self.longitude = longitude
+        // Location is now optional - nil means "not yet available"
+        self.latitude = dictionary["latitude"] as? Double
+        self.longitude = dictionary["longitude"] as? Double
         self.batteryLevel = batteryLevel
         self.isLocationSharing = isLocationSharing
         self.circleIds = dictionary["circleIds"] as? [String] ?? []

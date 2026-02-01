@@ -6,7 +6,7 @@ import FirebaseAuth
 
 struct MapView: View {
     @EnvironmentObject var firestoreService: FirestoreService
-    @StateObject private var locationManager = PrecisionLocationManager()
+    @EnvironmentObject var locationManager: PrecisionLocationManager  // Use shared instance
     @StateObject private var sosService = SOSService.shared
     @State private var region = MKCoordinateRegion(
         center: CLLocationCoordinate2D(latitude: 37.7749, longitude: -122.4194),
@@ -102,14 +102,22 @@ struct MapView: View {
         }
     }
 
+    /// Filter members to only show those with valid locations (not nil and not 0,0)
+    private var membersWithValidLocation: [UserProfile] {
+        firestoreService.circleMembers.filter { $0.hasValidLocation }
+    }
+
     private var mapView: some View {
-        Map(coordinateRegion: $region, showsUserLocation: true, annotationItems: firestoreService.circleMembers) { member in
-            MapAnnotation(coordinate: member.coordinate) {
+        Map(coordinateRegion: $region, showsUserLocation: true, annotationItems: membersWithValidLocation) { member in
+            // Safe to force-unwrap since we filtered for hasValidLocation
+            MapAnnotation(coordinate: member.coordinate!) {
                 MemberAnnotation(member: member, isSelected: selectedMember?.id == member.id)
                     .onTapGesture {
                         withAnimation {
                             selectedMember = member
-                            region.center = member.coordinate
+                            if let coordinate = member.coordinate {
+                                region.center = coordinate
+                            }
                         }
                     }
             }
@@ -764,7 +772,7 @@ struct MemberDetailCard: View {
     // MARK: - Actions
 
     private func openDirections() {
-        let coordinate = member.coordinate
+        guard let coordinate = member.coordinate else { return }
         let mapItem = MKMapItem(placemark: MKPlacemark(coordinate: coordinate))
         mapItem.name = member.displayName
         mapItem.openInMaps(launchOptions: [
@@ -796,8 +804,15 @@ struct MemberDetailCard: View {
     }
 
     private func lookupAddress() async {
+        guard let lat = member.latitude, let lon = member.longitude else {
+            await MainActor.run {
+                addressText = "Location not available"
+                isLoadingAddress = false
+            }
+            return
+        }
         let geocoder = CLGeocoder()
-        let location = CLLocation(latitude: member.latitude, longitude: member.longitude)
+        let location = CLLocation(latitude: lat, longitude: lon)
 
         do {
             let placemarks = try await geocoder.reverseGeocodeLocation(location)
@@ -809,7 +824,11 @@ struct MemberDetailCard: View {
             }
         } catch {
             await MainActor.run {
-                addressText = String(format: "%.4f, %.4f", member.latitude, member.longitude)
+                if let lat = member.latitude, let lon = member.longitude {
+                    addressText = String(format: "%.4f, %.4f", lat, lon)
+                } else {
+                    addressText = "Location not available"
+                }
                 isLoadingAddress = false
             }
         }
@@ -839,12 +858,14 @@ struct MemberDetailCard: View {
 
     private func calculateETAs() async {
         guard member.isLocationSharing,
+              let lat = member.latitude,
+              let lon = member.longitude,
               let accuracy = member.horizontalAccuracy,
               accuracy < 100 else { return }
 
         let location = PrecisionLocation(
-            latitude: member.latitude,
-            longitude: member.longitude,
+            latitude: lat,
+            longitude: lon,
             horizontalAccuracy: accuracy,
             source: .fused
         )
@@ -955,4 +976,5 @@ struct EnhancedETARow: View {
 #Preview {
     MapView()
         .environmentObject(FirestoreService.shared)
+        .environmentObject(PrecisionLocationManager())
 }

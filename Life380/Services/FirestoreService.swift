@@ -29,18 +29,19 @@ class FirestoreService: ObservableObject {
 
     // MARK: - User Profile
 
-    func createUserProfile(userId: String, email: String, displayName: String) async throws {
+    func createUserProfile(userId: String, email: String, displayName: String, latitude: Double? = nil, longitude: Double? = nil, accuracy: Double? = nil) async throws {
         let profile = UserProfile(
             id: userId,
             email: email,
             displayName: displayName,
             photoURL: nil,
-            latitude: 0,
-            longitude: 0,
+            latitude: latitude,  // nil means location not yet available (avoids "Null Island" bug)
+            longitude: longitude,
             lastUpdated: Date(),
             batteryLevel: 100,
             isLocationSharing: true,
-            circleIds: []  // Initialize with empty array
+            circleIds: [],
+            horizontalAccuracy: accuracy
         )
 
         try await db.collection("users").document(userId).setData(profile.dictionary)

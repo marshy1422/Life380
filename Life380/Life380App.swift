@@ -6,6 +6,7 @@ struct Life380App: App {
     @StateObject private var authService = AuthenticationService()
     @StateObject private var firestoreService = FirestoreService.shared
     @StateObject private var notificationService = NotificationService.shared
+    @StateObject private var locationManager = PrecisionLocationManager()  // Shared location manager
 
     init() {
         FirebaseApp.configure()
@@ -17,6 +18,7 @@ struct Life380App: App {
                 .environmentObject(authService)
                 .environmentObject(firestoreService)
                 .environmentObject(notificationService)
+                .environmentObject(locationManager)  // Shared location manager
                 .task {
                     // Request notification permissions and set up categories
                     await setupNotifications()

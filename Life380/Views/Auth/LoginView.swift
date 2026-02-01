@@ -1,8 +1,10 @@
 import SwiftUI
 import AuthenticationServices
+import CoreLocation
 
 struct LoginView: View {
     @EnvironmentObject var authService: AuthenticationService
+    @EnvironmentObject var locationManager: PrecisionLocationManager
     @Environment(\.colorScheme) var colorScheme
     @State private var email = ""
     @State private var password = ""
@@ -221,7 +223,16 @@ struct LoginView: View {
                 switch result {
                 case .success(let authorization):
                     Task {
-                        await authService.handleSignInWithApple(authorization: authorization)
+                        // Get location for new users (fixes "Null Island" bug)
+                        locationManager.requestPermission()
+                        locationManager.startTracking()
+                        let location = await waitForLocation(timeout: 3.0)
+
+                        await authService.handleSignInWithApple(
+                            authorization: authorization,
+                            location: location?.coordinate,
+                            accuracy: location?.horizontalAccuracy
+                        )
                     }
                 case .failure(let error):
                     authService.errorMessage = error.localizedDescription
@@ -267,9 +278,25 @@ struct LoginView: View {
             await authService.signIn(email: email, password: password)
         }
     }
+
+    /// Wait for location with timeout - returns nil if location not available in time
+    private func waitForLocation(timeout: TimeInterval) async -> PrecisionLocation? {
+        let startTime = Date()
+
+        while Date().timeIntervalSince(startTime) < timeout {
+            if let location = locationManager.currentLocation,
+               location.horizontalAccuracy < 100 {
+                return location
+            }
+            try? await Task.sleep(nanoseconds: 100_000_000)  // 100ms
+        }
+
+        return locationManager.currentLocation
+    }
 }
 
 #Preview {
     LoginView()
         .environmentObject(AuthenticationService())
+        .environmentObject(PrecisionLocationManager())
 }

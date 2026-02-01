@@ -1,8 +1,11 @@
 import SwiftUI
+import UIKit
 
 struct ContentView: View {
     @EnvironmentObject var firestoreService: FirestoreService
+    @EnvironmentObject var locationManager: PrecisionLocationManager  // Use shared instance
     @State private var selectedTab = 0
+    @State private var hasUpdatedInitialLocation = false
 
     var body: some View {
         TabView(selection: $selectedTab) {
@@ -44,7 +47,33 @@ struct ContentView: View {
         .onAppear {
             firestoreService.listenToUserProfile()
             firestoreService.listenToCircles()
+
+            // Request location permission and start tracking immediately on sign-in
+            locationManager.requestPermission()
+            locationManager.startTracking()
         }
+        .onChange(of: locationManager.currentLocation) { _, newLocation in
+            // Update Firestore with actual location as soon as we have it
+            // This fixes the bug where users see 0,0 (Null Island) after sign-in
+            if !hasUpdatedInitialLocation, let location = newLocation {
+                hasUpdatedInitialLocation = true
+                Task {
+                    await firestoreService.updateUserLocation(
+                        latitude: location.latitude,
+                        longitude: location.longitude,
+                        batteryLevel: getBatteryLevel(),
+                        accuracy: location.horizontalAccuracy,
+                        floor: location.floor
+                    )
+                }
+            }
+        }
+    }
+
+    private func getBatteryLevel() -> Int {
+        UIDevice.current.isBatteryMonitoringEnabled = true
+        let level = UIDevice.current.batteryLevel
+        return level < 0 ? 100 : Int(level * 100)
     }
 }
 
@@ -52,4 +81,5 @@ struct ContentView: View {
     ContentView()
         .environmentObject(AuthenticationService())
         .environmentObject(FirestoreService.shared)
+        .environmentObject(PrecisionLocationManager())
 }

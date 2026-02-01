@@ -299,7 +299,8 @@ class SOSService: ObservableObject {
         // Get current location from the user profile
         guard let userProfile = FirestoreService.shared.currentUserProfile else { return }
 
-        let coordinate = userProfile.coordinate
+        // Skip if user has no valid location
+        guard let coordinate = userProfile.coordinate else { return }
         let accuracy = userProfile.horizontalAccuracy ?? 10.0
 
         streamedLocations.append(coordinate)

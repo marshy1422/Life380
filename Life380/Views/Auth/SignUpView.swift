@@ -1,16 +1,19 @@
 import SwiftUI
 import AuthenticationServices
+import CoreLocation
 
 struct SignUpView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.colorScheme) var colorScheme
     @EnvironmentObject var authService: AuthenticationService
+    @EnvironmentObject var locationManager: PrecisionLocationManager
 
     @State private var displayName = ""
     @State private var email = ""
     @State private var password = ""
     @State private var confirmPassword = ""
     @State private var agreedToTerms = false
+    @State private var isRequestingLocation = false
 
     var passwordsMatch: Bool {
         !password.isEmpty && password == confirmPassword
@@ -82,10 +85,12 @@ struct SignUpView: View {
 
                 Section {
                     Button(action: signUp) {
-                        if authService.isLoading {
+                        if authService.isLoading || isRequestingLocation {
                             HStack {
                                 Spacer()
                                 ProgressView()
+                                Text(isRequestingLocation ? "Getting location..." : "Creating account...")
+                                    .foregroundColor(.secondary)
                                 Spacer()
                             }
                         } else {
@@ -96,7 +101,7 @@ struct SignUpView: View {
                             }
                         }
                     }
-                    .disabled(!isFormValid || authService.isLoading)
+                    .disabled(!isFormValid || authService.isLoading || isRequestingLocation)
                 }
 
                 // Sign in with Apple option
@@ -109,7 +114,16 @@ struct SignUpView: View {
                         switch result {
                         case .success(let authorization):
                             Task {
-                                await authService.handleSignInWithApple(authorization: authorization)
+                                // Get location before creating profile (fixes "Null Island" bug)
+                                locationManager.requestPermission()
+                                locationManager.startTracking()
+                                let location = await waitForLocation(timeout: 3.0)
+
+                                await authService.handleSignInWithApple(
+                                    authorization: authorization,
+                                    location: location?.coordinate,
+                                    accuracy: location?.horizontalAccuracy
+                                )
                                 if authService.isAuthenticated {
                                     dismiss()
                                 }
@@ -143,12 +157,45 @@ struct SignUpView: View {
 
     private func signUp() {
         Task {
-            await authService.signUp(email: email, password: password, displayName: displayName)
+            // Request location permission and get initial location before creating profile
+            // This fixes the "Null Island" bug where users appear at (0,0) after sign-up
+            isRequestingLocation = true
+            locationManager.requestPermission()
+            locationManager.startTracking()
+
+            // Wait briefly for location (with timeout to not block sign-up)
+            let location = await waitForLocation(timeout: 3.0)
+            isRequestingLocation = false
+
+            await authService.signUp(
+                email: email,
+                password: password,
+                displayName: displayName,
+                location: location?.coordinate,
+                accuracy: location?.horizontalAccuracy
+            )
         }
+    }
+
+    /// Wait for location with timeout - returns nil if location not available in time
+    private func waitForLocation(timeout: TimeInterval) async -> PrecisionLocation? {
+        let startTime = Date()
+
+        while Date().timeIntervalSince(startTime) < timeout {
+            if let location = locationManager.currentLocation,
+               location.horizontalAccuracy < 100 {  // Only accept reasonably accurate locations
+                return location
+            }
+            try? await Task.sleep(nanoseconds: 100_000_000)  // 100ms
+        }
+
+        // Return current location even if not ideal (better than nil in most cases)
+        return locationManager.currentLocation
     }
 }
 
 #Preview {
     SignUpView()
         .environmentObject(AuthenticationService())
+        .environmentObject(PrecisionLocationManager())
 }
