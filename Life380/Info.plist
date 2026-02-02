@@ -40,6 +40,8 @@
 	<string>Life380 uses motion data to improve location accuracy and detect when you're driving, walking, or stationary.</string>
 	<key>NSFaceIDUsageDescription</key>
 	<string>Life380 uses Face ID to secure sensitive features like toggling location sharing and triggering emergency SOS alerts.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Life380 uses the camera to scan QR codes for quickly joining family circles.</string>
 	<key>NSUserNotificationsUsageDescription</key>
 	<string>Life380 sends notifications when family members arrive or leave places, and for emergency SOS alerts.</string>
 	<key>UIBackgroundModes</key>
