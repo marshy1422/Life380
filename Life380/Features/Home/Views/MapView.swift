@@ -453,7 +453,9 @@ struct MapOverlayView: View {
                     #endif
                 }
 
-                if let floor = location.floor {
+                // Only show floor badge for reasonable values (-2 to +20)
+                // Values outside this range are likely barometer noise
+                if let floor = location.floor, floor >= -2 && floor <= 20 && floor != 0 {
                     FloorBadge(floor: floor)
                 }
 

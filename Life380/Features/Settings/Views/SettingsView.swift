@@ -119,6 +119,18 @@ struct SettingsView: View {
                                 .foregroundColor(.secondary)
                         }
                     }
+
+                    // AI Learning - requires adding AI files to Xcode project
+                    // NavigationLink {
+                    //     AILearningView()
+                    // } label: {
+                    //     HStack {
+                    //         Label("AI Learning", systemImage: "brain")
+                    //         Spacer()
+                    //         Image(systemName: "sparkles")
+                    //             .foregroundColor(.purple)
+                    //     }
+                    // }
                 }
 
                 // Notifications

@@ -155,8 +155,11 @@ struct UserProfile: Identifiable, Codable, Equatable {
 
     var floorDisplayName: String? {
         guard let floor = floor else { return nil }
+        // Only show floor for reasonable values (-2 to +20)
+        // Values outside this range are likely barometer noise, not actual floors
+        guard floor >= -2 && floor <= 20 else { return nil }
         if floor == 0 {
-            return "Ground floor"
+            return nil // Don't show "Ground floor" - it's the default
         } else if floor > 0 {
             return "Floor \(floor)"
         } else {
