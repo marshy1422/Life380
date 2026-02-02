@@ -586,6 +586,7 @@ struct MemberDetailCard: View {
     @State private var addressText: String = "Loading address..."
     @State private var isLoadingAddress: Bool = true
     @State private var showAllETAs: Bool = false
+    @State private var showNoPhoneAlert: Bool = false
     let onDismiss: () -> Void
 
     private var activityStatus: (icon: String, text: String, color: Color) {
@@ -633,6 +634,11 @@ struct MemberDetailCard: View {
         .shadow(color: Color.black.opacity(0.15), radius: 12, x: 0, y: 4)
         .task {
             await loadData()
+        }
+        .alert("No Phone Number", isPresented: $showNoPhoneAlert) {
+            Button("OK", role: .cancel) { }
+        } message: {
+            Text("\(member.displayName) hasn't added a phone number to their profile yet.")
         }
     }
 
@@ -892,17 +898,24 @@ struct MemberDetailCard: View {
     }
 
     private func makeCall() {
-        // In a real app, you'd store phone numbers in UserProfile
-        // For now, we'll show an alert or use a placeholder
-        if let url = URL(string: "tel://"), UIApplication.shared.canOpenURL(url) {
-            // Would open phone app - in production, use actual phone number
+        guard let phoneNumber = member.phoneNumber, !phoneNumber.isEmpty else {
+            showNoPhoneAlert = true
+            return
+        }
+        let cleaned = phoneNumber.replacingOccurrences(of: "[^0-9+]", with: "", options: .regularExpression)
+        if let url = URL(string: "tel://\(cleaned)") {
+            UIApplication.shared.open(url)
         }
     }
 
     private func sendMessage() {
-        // In a real app, you'd open Messages with the member's phone number
-        if let url = URL(string: "sms://"), UIApplication.shared.canOpenURL(url) {
-            // Would open Messages app - in production, use actual phone number
+        guard let phoneNumber = member.phoneNumber, !phoneNumber.isEmpty else {
+            showNoPhoneAlert = true
+            return
+        }
+        let cleaned = phoneNumber.replacingOccurrences(of: "[^0-9+]", with: "", options: .regularExpression)
+        if let url = URL(string: "sms://\(cleaned)") {
+            UIApplication.shared.open(url)
         }
     }
 
