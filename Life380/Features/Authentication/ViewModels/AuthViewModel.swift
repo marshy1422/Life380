@@ -82,8 +82,8 @@ class AuthViewModel: ObservableObject {
 
         isLoading = true
 
-        let location = locationManager?.lastLocation?.coordinate
-        let accuracy = locationManager?.lastLocation?.horizontalAccuracy
+        let location = locationManager?.currentLocation?.coordinate
+        let accuracy = locationManager?.currentLocation?.horizontalAccuracy
 
         await authService.signUp(
             email: email,
@@ -131,8 +131,8 @@ class AuthViewModel: ObservableObject {
     func handleAppleSignIn(authorization: ASAuthorization) async {
         isLoading = true
 
-        let location = locationManager?.lastLocation?.coordinate
-        let accuracy = locationManager?.lastLocation?.horizontalAccuracy
+        let location = locationManager?.currentLocation?.coordinate
+        let accuracy = locationManager?.currentLocation?.horizontalAccuracy
 
         await authService.handleSignInWithApple(
             authorization: authorization,

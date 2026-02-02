@@ -10,87 +10,246 @@
 		31BB6B8A2F2716910005B915 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 31BB6B892F2716910005B915 /* FirebaseAuth */; };
 		31BB6B8C2F2716910005B915 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 31BB6B8B2F2716910005B915 /* FirebaseFirestore */; };
 		31BB6B8E2F2716910005B915 /* FirebaseMessaging in Frameworks */ = {isa = PBXBuildFile; productRef = 31BB6B8D2F2716910005B915 /* FirebaseMessaging */; };
-		A1000001001800000000001A /* Life380App.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000001001700000000001A /* Life380App.swift */; };
-		A1000001001800000000002A /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000001001700000000002A /* ContentView.swift */; };
-		A1000001001800000000003A /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A1000001001700000000003A /* Assets.xcassets */; };
-		A1000001001800000000004A /* MapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000001001700000000004A /* MapView.swift */; };
-		A1000001001800000000005A /* PlacesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000001001700000000005A /* PlacesView.swift */; };
-		A1000001001800000000006A /* CircleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000001001700000000006A /* CircleView.swift */; };
-		A1000001001800000000007A /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000001001700000000007A /* SettingsView.swift */; };
-		A1000001001800000000008A /* FamilyMember.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000001001700000000008A /* FamilyMember.swift */; };
-		A1000001001800000000009A /* Place.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000001001700000000009A /* Place.swift */; };
-		A1000001001800000000010A /* LocationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000001001700000000010A /* LocationManager.swift */; };
-		A1000001001800000000011A /* AuthenticationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000001001700000000012A /* AuthenticationService.swift */; };
-		A1000001001800000000012A /* FirestoreService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000001001700000000013A /* FirestoreService.swift */; };
-		A1000001001800000000013A /* UserProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000001001700000000014A /* UserProfile.swift */; };
-		A1000001001800000000014A /* Circle.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000001001700000000015A /* Circle.swift */; };
-		A1000001001800000000015A /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000001001700000000016A /* LoginView.swift */; };
-		A1000001001800000000016A /* SignUpView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000001001700000000017A /* SignUpView.swift */; };
-		A1000001001800000000017A /* ForgotPasswordView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000001001700000000018A /* ForgotPasswordView.swift */; };
-		A1000001001800000000018A /* TermsOfServiceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000001001700000000019A /* TermsOfServiceView.swift */; };
-		A1000001001800000000019A /* PrivacyPolicyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000001001700000000020A /* PrivacyPolicyView.swift */; };
-		A1000001001800000000020A /* DeleteAccountView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000001001700000000021A /* DeleteAccountView.swift */; };
-		A1000001001800000000021A /* AppTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000001001700000000022A /* AppTheme.swift */; };
-		A1000001001800000000022A /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = A1000001001700000000023A /* GoogleService-Info.plist */; };
-		A1000001001800000000024A /* PrecisionLocation.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000001001700000000024A /* PrecisionLocation.swift */; };
-		A1000001001800000000025A /* PrecisionLocationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000001001700000000025A /* PrecisionLocationManager.swift */; };
-		A1000001001800000000026A /* PrecisionIndicator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000001001700000000026A /* PrecisionIndicator.swift */; };
-		A1000001001800000000027A /* GeofenceDebugView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000001001700000000027A /* GeofenceDebugView.swift */; };
-		A1000001001800000000028A /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000001001700000000028A /* NotificationService.swift */; };
-		A1000001001800000000029A /* ETAService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000001001700000000029A /* ETAService.swift */; };
-		A1000001001800000000030A /* ETABadge.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000001001700000000030A /* ETABadge.swift */; };
-		A1000001001800000000031A /* SOSService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000001001700000000031A /* SOSService.swift */; };
-		A1000001001800000000032A /* SOSButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000001001700000000032A /* SOSButton.swift */; };
-		A1000001001800000000033A /* Insights.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000001001700000000033A /* Insights.swift */; };
-		A1000001001800000000034A /* InsightsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000001001700000000034A /* InsightsService.swift */; };
-		A1000001001800000000035A /* InsightsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000001001700000000035A /* InsightsView.swift */; };
-		A1000001001800000000036A /* BetaFeedbackView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000001001700000000036A /* BetaFeedbackView.swift */; };
-		A1000001001800000000037A /* BiometricAuthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000001001700000000037A /* BiometricAuthService.swift */; };
-		A1000001001800000000038A /* LocationHistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000001001700000000038A /* LocationHistoryView.swift */; };
-		A1000001001800000000039A /* SecurityService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000001001700000000039A /* SecurityService.swift */; };
+		/* App */
+		B1000001000100000000001A /* Life380App.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000001000200000000001A /* Life380App.swift */; };
+		B1000001000100000000002A /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000001000200000000002A /* AppDelegate.swift */; };
+		B1000001000100000000003A /* AppConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000001000200000000003A /* AppConfig.swift */; };
+		B1000001000100000000004A /* Environment.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000001000200000000004A /* Environment.swift */; };
+		B1000001000100000000005A /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000001000200000000005A /* Constants.swift */; };
+		/* Core Extensions */
+		B1000002000100000000001A /* Date+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000002000200000000001A /* Date+Extensions.swift */; };
+		B1000002000100000000002A /* String+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000002000200000000002A /* String+Extensions.swift */; };
+		B1000002000100000000003A /* View+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000002000200000000003A /* View+Extensions.swift */; };
+		B1000002000100000000004A /* CLLocation+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000002000200000000004A /* CLLocation+Extensions.swift */; };
+		B1000002000100000000005A /* Color+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000002000200000000005A /* Color+Extensions.swift */; };
+		/* Core Utilities */
+		B1000002000100000000006A /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000002000200000000006A /* Logger.swift */; };
+		B1000002000100000000007A /* Haptics.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000002000200000000007A /* Haptics.swift */; };
+		B1000002000100000000008A /* KeychainManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000002000200000000008A /* KeychainManager.swift */; };
+		B1000002000100000000009A /* NetworkMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000002000200000000009A /* NetworkMonitor.swift */; };
+		/* Core Protocols */
+		B1000002000100000000010A /* LocationServiceProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000002000200000000010A /* LocationServiceProtocol.swift */; };
+		B1000002000100000000011A /* AuthServiceProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000002000200000000011A /* AuthServiceProtocol.swift */; };
+		B1000002000100000000012A /* CircleServiceProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000002000200000000012A /* CircleServiceProtocol.swift */; };
+		/* Models User */
+		B1000003000100000000001A /* UserProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000003000200000000001A /* UserProfile.swift */; };
+		B1000003000100000000002A /* UserSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000003000200000000002A /* UserSettings.swift */; };
+		/* Models Circle */
+		B1000003000100000000003A /* Circle.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000003000200000000003A /* Circle.swift */; };
+		B1000003000100000000004A /* CircleMember.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000003000200000000004A /* CircleMember.swift */; };
+		B1000003000100000000005A /* CircleInvite.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000003000200000000005A /* CircleInvite.swift */; };
+		/* Models Location */
+		B1000003000100000000006A /* Place.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000003000200000000006A /* Place.swift */; };
+		B1000003000100000000007A /* UserLocation.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000003000200000000007A /* UserLocation.swift */; };
+		/* Models Enums */
+		B1000003000100000000008A /* LocationAccuracy.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000003000200000000008A /* LocationAccuracy.swift */; };
+		B1000003000100000000009A /* MemberStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000003000200000000009A /* MemberStatus.swift */; };
+		B1000003000100000000010A /* InviteStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000003000200000000010A /* InviteStatus.swift */; };
+		/* Models Insights */
+		B1000003000100000000011A /* Insights.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000003000200000000011A /* Insights.swift */; };
+		/* Services Auth */
+		B1000004000100000000001A /* AuthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000004000200000000001A /* AuthService.swift */; };
+		B1000004000100000000002A /* BiometricAuthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000004000200000000002A /* BiometricAuthService.swift */; };
+		/* Services Location */
+		B1000004000100000000003A /* LocationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000004000200000000003A /* LocationManager.swift */; };
+		B1000004000100000000004A /* PrecisionLocationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000004000200000000004A /* PrecisionLocationManager.swift */; };
+		B1000004000100000000005A /* GeocodingService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000004000200000000005A /* GeocodingService.swift */; };
+		/* Services Firebase */
+		B1000004000100000000006A /* FirestoreService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000004000200000000006A /* FirestoreService.swift */; };
+		B1000004000100000000007A /* FirebaseAuthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000004000200000000007A /* FirebaseAuthService.swift */; };
+		B1000004000100000000008A /* PushNotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000004000200000000008A /* PushNotificationService.swift */; };
+		/* Services Circle */
+		B1000004000100000000009A /* CircleService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000004000200000000009A /* CircleService.swift */; };
+		B1000004000100000000010A /* InviteService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000004000200000000010A /* InviteService.swift */; };
+		/* Services Safety */
+		B1000004000100000000011A /* SOSService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000004000200000000011A /* SOSService.swift */; };
+		B1000004000100000000012A /* SecurityService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000004000200000000012A /* SecurityService.swift */; };
+		/* Services Analytics */
+		B1000004000100000000013A /* InsightsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000004000200000000013A /* InsightsService.swift */; };
+		B1000004000100000000014A /* ETAService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000004000200000000014A /* ETAService.swift */; };
+		/* Features Authentication Views */
+		B1000005000100000000001A /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000005000200000000001A /* LoginView.swift */; };
+		B1000005000100000000002A /* SignUpView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000005000200000000002A /* SignUpView.swift */; };
+		B1000005000100000000003A /* ForgotPasswordView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000005000200000000003A /* ForgotPasswordView.swift */; };
+		B1000005000100000000004A /* AuthTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000005000200000000004A /* AuthTextField.swift */; };
+		B1000005000100000000005A /* SocialLoginButtons.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000005000200000000005A /* SocialLoginButtons.swift */; };
+		B1000005000100000000006A /* AuthViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000005000200000000006A /* AuthViewModel.swift */; };
+		/* Features Home Views */
+		B1000005000100000000007A /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000005000200000000007A /* HomeView.swift */; };
+		B1000005000100000000008A /* MapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000005000200000000008A /* MapView.swift */; };
+		B1000005000100000000009A /* HomeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000005000200000000009A /* HomeViewModel.swift */; };
+		/* Features Circles Views */
+		B1000005000100000000010A /* CircleListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000005000200000000010A /* CircleListView.swift */; };
+		B1000005000100000000011A /* CircleListViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000005000200000000011A /* CircleListViewModel.swift */; };
+		B1000005000100000000012A /* CircleDetailViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000005000200000000012A /* CircleDetailViewModel.swift */; };
+		/* Features Invites Views */
+		B1000005000100000000013A /* CreateCircleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000005000200000000013A /* CreateCircleView.swift */; };
+		B1000005000100000000014A /* JoinCircleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000005000200000000014A /* JoinCircleView.swift */; };
+		B1000005000100000000015A /* InviteToCircleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000005000200000000015A /* InviteToCircleView.swift */; };
+		B1000005000100000000016A /* QRScannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000005000200000000016A /* QRScannerView.swift */; };
+		B1000005000100000000017A /* InviteViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000005000200000000017A /* InviteViewModel.swift */; };
+		/* Features Places Views */
+		B1000005000100000000018A /* PlacesListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000005000200000000018A /* PlacesListView.swift */; };
+		B1000005000100000000019A /* PlacesViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000005000200000000019A /* PlacesViewModel.swift */; };
+		/* Features Settings Views */
+		B1000005000100000000020A /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000005000200000000020A /* SettingsView.swift */; };
+		B1000005000100000000021A /* DeleteAccountView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000005000200000000021A /* DeleteAccountView.swift */; };
+		B1000005000100000000022A /* BetaFeedbackView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000005000200000000022A /* BetaFeedbackView.swift */; };
+		B1000005000100000000023A /* PrivacyPolicyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000005000200000000023A /* PrivacyPolicyView.swift */; };
+		B1000005000100000000024A /* TermsOfServiceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000005000200000000024A /* TermsOfServiceView.swift */; };
+		B1000005000100000000025A /* SettingsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000005000200000000025A /* SettingsViewModel.swift */; };
+		/* UI Theme */
+		B1000006000100000000001A /* Colors.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000006000200000000001A /* Colors.swift */; };
+		B1000006000100000000002A /* Fonts.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000006000200000000002A /* Fonts.swift */; };
+		B1000006000100000000003A /* Spacing.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000006000200000000003A /* Spacing.swift */; };
+		B1000006000100000000004A /* Shadows.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000006000200000000004A /* Shadows.swift */; };
+		/* UI Styles */
+		B1000006000100000000005A /* ButtonStyles.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000006000200000000005A /* ButtonStyles.swift */; };
+		B1000006000100000000006A /* CardStyles.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000006000200000000006A /* CardStyles.swift */; };
+		B1000006000100000000007A /* TextStyles.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000006000200000000007A /* TextStyles.swift */; };
+		/* UI Components */
+		B1000006000100000000008A /* PrimaryButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000006000200000000008A /* PrimaryButton.swift */; };
+		B1000006000100000000009A /* IconButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000006000200000000009A /* IconButton.swift */; };
+		B1000006000100000000010A /* SOSButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000006000200000000010A /* SOSButton.swift */; };
+		B1000006000100000000011A /* ETABadge.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000006000200000000011A /* ETABadge.swift */; };
+		B1000006000100000000012A /* LoadingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000006000200000000012A /* LoadingView.swift */; };
+		B1000006000100000000013A /* ShimmerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000006000200000000013A /* ShimmerView.swift */; };
+		B1000006000100000000014A /* EmptyStateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000006000200000000014A /* EmptyStateView.swift */; };
+		B1000006000100000000015A /* ToastView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000006000200000000015A /* ToastView.swift */; };
+		B1000006000100000000016A /* PrecisionIndicator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000006000200000000016A /* PrecisionIndicator.swift */; };
+		/* Legacy Views that still need to be in project */
+		B1000007000100000000001A /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000007000200000000001A /* ContentView.swift */; };
+		B1000007000100000000002A /* InsightsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000007000200000000002A /* InsightsView.swift */; };
+		B1000007000100000000003A /* LocationHistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000007000200000000003A /* LocationHistoryView.swift */; };
+		B1000007000100000000004A /* GeofenceDebugView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000007000200000000004A /* GeofenceDebugView.swift */; };
+		B1000007000100000000005A /* AppTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000007000200000000005A /* AppTheme.swift */; };
+		/* Resources */
+		B1000008000100000000001A /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B1000008000200000000001A /* Assets.xcassets */; };
+		B1000008000100000000002A /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = B1000008000200000000002A /* GoogleService-Info.plist */; };
+		B1000008000100000000003A /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = B1000008000200000000003A /* Localizable.strings */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		A1000001001600000000001A /* Life380.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Life380.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		A1000001001700000000001A /* Life380App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Life380App.swift; sourceTree = "<group>"; };
-		A1000001001700000000002A /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
-		A1000001001700000000003A /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		A1000001001700000000004A /* MapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapView.swift; sourceTree = "<group>"; };
-		A1000001001700000000005A /* PlacesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlacesView.swift; sourceTree = "<group>"; };
-		A1000001001700000000006A /* CircleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CircleView.swift; sourceTree = "<group>"; };
-		A1000001001700000000007A /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
-		A1000001001700000000008A /* FamilyMember.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FamilyMember.swift; sourceTree = "<group>"; };
-		A1000001001700000000009A /* Place.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Place.swift; sourceTree = "<group>"; };
-		A1000001001700000000010A /* LocationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationManager.swift; sourceTree = "<group>"; };
 		A1000001001700000000011A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		A1000001001700000000012A /* AuthenticationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthenticationService.swift; sourceTree = "<group>"; };
-		A1000001001700000000013A /* FirestoreService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirestoreService.swift; sourceTree = "<group>"; };
-		A1000001001700000000014A /* UserProfile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserProfile.swift; sourceTree = "<group>"; };
-		A1000001001700000000015A /* Circle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Circle.swift; sourceTree = "<group>"; };
-		A1000001001700000000016A /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
-		A1000001001700000000017A /* SignUpView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignUpView.swift; sourceTree = "<group>"; };
-		A1000001001700000000018A /* ForgotPasswordView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ForgotPasswordView.swift; sourceTree = "<group>"; };
-		A1000001001700000000019A /* TermsOfServiceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TermsOfServiceView.swift; sourceTree = "<group>"; };
-		A1000001001700000000020A /* PrivacyPolicyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrivacyPolicyView.swift; sourceTree = "<group>"; };
-		A1000001001700000000021A /* DeleteAccountView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeleteAccountView.swift; sourceTree = "<group>"; };
-		A1000001001700000000022A /* AppTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppTheme.swift; sourceTree = "<group>"; };
-		A1000001001700000000023A /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
-		A1000001001700000000024A /* PrecisionLocation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrecisionLocation.swift; sourceTree = "<group>"; };
-		A1000001001700000000025A /* PrecisionLocationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrecisionLocationManager.swift; sourceTree = "<group>"; };
-		A1000001001700000000026A /* PrecisionIndicator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrecisionIndicator.swift; sourceTree = "<group>"; };
-		A1000001001700000000027A /* GeofenceDebugView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeofenceDebugView.swift; sourceTree = "<group>"; };
-		A1000001001700000000028A /* NotificationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationService.swift; sourceTree = "<group>"; };
-		A1000001001700000000029A /* ETAService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ETAService.swift; sourceTree = "<group>"; };
-		A1000001001700000000030A /* ETABadge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ETABadge.swift; sourceTree = "<group>"; };
-		A1000001001700000000031A /* SOSService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SOSService.swift; sourceTree = "<group>"; };
-		A1000001001700000000032A /* SOSButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SOSButton.swift; sourceTree = "<group>"; };
-		A1000001001700000000033A /* Insights.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Insights.swift; sourceTree = "<group>"; };
-		A1000001001700000000034A /* InsightsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InsightsService.swift; sourceTree = "<group>"; };
-		A1000001001700000000035A /* InsightsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InsightsView.swift; sourceTree = "<group>"; };
-		A1000001001700000000036A /* BetaFeedbackView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BetaFeedbackView.swift; sourceTree = "<group>"; };
-		A1000001001700000000037A /* BiometricAuthService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BiometricAuthService.swift; sourceTree = "<group>"; };
-		A1000001001700000000038A /* LocationHistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationHistoryView.swift; sourceTree = "<group>"; };
-		A1000001001700000000039A /* SecurityService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecurityService.swift; sourceTree = "<group>"; };
+		A1000001001700000000040A /* Life380.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Life380.entitlements; sourceTree = "<group>"; };
+		/* App */
+		B1000001000200000000001A /* Life380App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Life380App.swift; sourceTree = "<group>"; };
+		B1000001000200000000002A /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		B1000001000200000000003A /* AppConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConfig.swift; sourceTree = "<group>"; };
+		B1000001000200000000004A /* Environment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Environment.swift; sourceTree = "<group>"; };
+		B1000001000200000000005A /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
+		/* Core Extensions */
+		B1000002000200000000001A /* Date+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Date+Extensions.swift"; sourceTree = "<group>"; };
+		B1000002000200000000002A /* String+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "String+Extensions.swift"; sourceTree = "<group>"; };
+		B1000002000200000000003A /* View+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+Extensions.swift"; sourceTree = "<group>"; };
+		B1000002000200000000004A /* CLLocation+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CLLocation+Extensions.swift"; sourceTree = "<group>"; };
+		B1000002000200000000005A /* Color+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Color+Extensions.swift"; sourceTree = "<group>"; };
+		/* Core Utilities */
+		B1000002000200000000006A /* Logger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logger.swift; sourceTree = "<group>"; };
+		B1000002000200000000007A /* Haptics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Haptics.swift; sourceTree = "<group>"; };
+		B1000002000200000000008A /* KeychainManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainManager.swift; sourceTree = "<group>"; };
+		B1000002000200000000009A /* NetworkMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkMonitor.swift; sourceTree = "<group>"; };
+		/* Core Protocols */
+		B1000002000200000000010A /* LocationServiceProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationServiceProtocol.swift; sourceTree = "<group>"; };
+		B1000002000200000000011A /* AuthServiceProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthServiceProtocol.swift; sourceTree = "<group>"; };
+		B1000002000200000000012A /* CircleServiceProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CircleServiceProtocol.swift; sourceTree = "<group>"; };
+		/* Models User */
+		B1000003000200000000001A /* UserProfile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserProfile.swift; sourceTree = "<group>"; };
+		B1000003000200000000002A /* UserSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserSettings.swift; sourceTree = "<group>"; };
+		/* Models Circle */
+		B1000003000200000000003A /* Circle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Circle.swift; sourceTree = "<group>"; };
+		B1000003000200000000004A /* CircleMember.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CircleMember.swift; sourceTree = "<group>"; };
+		B1000003000200000000005A /* CircleInvite.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CircleInvite.swift; sourceTree = "<group>"; };
+		/* Models Location */
+		B1000003000200000000006A /* Place.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Place.swift; sourceTree = "<group>"; };
+		B1000003000200000000007A /* UserLocation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserLocation.swift; sourceTree = "<group>"; };
+		/* Models Enums */
+		B1000003000200000000008A /* LocationAccuracy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationAccuracy.swift; sourceTree = "<group>"; };
+		B1000003000200000000009A /* MemberStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemberStatus.swift; sourceTree = "<group>"; };
+		B1000003000200000000010A /* InviteStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InviteStatus.swift; sourceTree = "<group>"; };
+		/* Models Insights */
+		B1000003000200000000011A /* Insights.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Insights.swift; sourceTree = "<group>"; };
+		/* Services Auth */
+		B1000004000200000000001A /* AuthService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthService.swift; sourceTree = "<group>"; };
+		B1000004000200000000002A /* BiometricAuthService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BiometricAuthService.swift; sourceTree = "<group>"; };
+		/* Services Location */
+		B1000004000200000000003A /* LocationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationManager.swift; sourceTree = "<group>"; };
+		B1000004000200000000004A /* PrecisionLocationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrecisionLocationManager.swift; sourceTree = "<group>"; };
+		B1000004000200000000005A /* GeocodingService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeocodingService.swift; sourceTree = "<group>"; };
+		/* Services Firebase */
+		B1000004000200000000006A /* FirestoreService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirestoreService.swift; sourceTree = "<group>"; };
+		B1000004000200000000007A /* FirebaseAuthService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirebaseAuthService.swift; sourceTree = "<group>"; };
+		B1000004000200000000008A /* PushNotificationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PushNotificationService.swift; sourceTree = "<group>"; };
+		/* Services Circle */
+		B1000004000200000000009A /* CircleService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CircleService.swift; sourceTree = "<group>"; };
+		B1000004000200000000010A /* InviteService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InviteService.swift; sourceTree = "<group>"; };
+		/* Services Safety */
+		B1000004000200000000011A /* SOSService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SOSService.swift; sourceTree = "<group>"; };
+		B1000004000200000000012A /* SecurityService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecurityService.swift; sourceTree = "<group>"; };
+		/* Services Analytics */
+		B1000004000200000000013A /* InsightsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InsightsService.swift; sourceTree = "<group>"; };
+		B1000004000200000000014A /* ETAService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ETAService.swift; sourceTree = "<group>"; };
+		/* Features Authentication Views */
+		B1000005000200000000001A /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
+		B1000005000200000000002A /* SignUpView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignUpView.swift; sourceTree = "<group>"; };
+		B1000005000200000000003A /* ForgotPasswordView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ForgotPasswordView.swift; sourceTree = "<group>"; };
+		B1000005000200000000004A /* AuthTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthTextField.swift; sourceTree = "<group>"; };
+		B1000005000200000000005A /* SocialLoginButtons.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SocialLoginButtons.swift; sourceTree = "<group>"; };
+		B1000005000200000000006A /* AuthViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthViewModel.swift; sourceTree = "<group>"; };
+		/* Features Home Views */
+		B1000005000200000000007A /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
+		B1000005000200000000008A /* MapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapView.swift; sourceTree = "<group>"; };
+		B1000005000200000000009A /* HomeViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewModel.swift; sourceTree = "<group>"; };
+		/* Features Circles Views */
+		B1000005000200000000010A /* CircleListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CircleListView.swift; sourceTree = "<group>"; };
+		B1000005000200000000011A /* CircleListViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CircleListViewModel.swift; sourceTree = "<group>"; };
+		B1000005000200000000012A /* CircleDetailViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CircleDetailViewModel.swift; sourceTree = "<group>"; };
+		/* Features Invites Views */
+		B1000005000200000000013A /* CreateCircleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateCircleView.swift; sourceTree = "<group>"; };
+		B1000005000200000000014A /* JoinCircleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JoinCircleView.swift; sourceTree = "<group>"; };
+		B1000005000200000000015A /* InviteToCircleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InviteToCircleView.swift; sourceTree = "<group>"; };
+		B1000005000200000000016A /* QRScannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRScannerView.swift; sourceTree = "<group>"; };
+		B1000005000200000000017A /* InviteViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InviteViewModel.swift; sourceTree = "<group>"; };
+		/* Features Places Views */
+		B1000005000200000000018A /* PlacesListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlacesListView.swift; sourceTree = "<group>"; };
+		B1000005000200000000019A /* PlacesViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlacesViewModel.swift; sourceTree = "<group>"; };
+		/* Features Settings Views */
+		B1000005000200000000020A /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		B1000005000200000000021A /* DeleteAccountView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeleteAccountView.swift; sourceTree = "<group>"; };
+		B1000005000200000000022A /* BetaFeedbackView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BetaFeedbackView.swift; sourceTree = "<group>"; };
+		B1000005000200000000023A /* PrivacyPolicyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrivacyPolicyView.swift; sourceTree = "<group>"; };
+		B1000005000200000000024A /* TermsOfServiceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TermsOfServiceView.swift; sourceTree = "<group>"; };
+		B1000005000200000000025A /* SettingsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewModel.swift; sourceTree = "<group>"; };
+		/* UI Theme */
+		B1000006000200000000001A /* Colors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Colors.swift; sourceTree = "<group>"; };
+		B1000006000200000000002A /* Fonts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Fonts.swift; sourceTree = "<group>"; };
+		B1000006000200000000003A /* Spacing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Spacing.swift; sourceTree = "<group>"; };
+		B1000006000200000000004A /* Shadows.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shadows.swift; sourceTree = "<group>"; };
+		/* UI Styles */
+		B1000006000200000000005A /* ButtonStyles.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ButtonStyles.swift; sourceTree = "<group>"; };
+		B1000006000200000000006A /* CardStyles.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardStyles.swift; sourceTree = "<group>"; };
+		B1000006000200000000007A /* TextStyles.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextStyles.swift; sourceTree = "<group>"; };
+		/* UI Components */
+		B1000006000200000000008A /* PrimaryButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrimaryButton.swift; sourceTree = "<group>"; };
+		B1000006000200000000009A /* IconButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IconButton.swift; sourceTree = "<group>"; };
+		B1000006000200000000010A /* SOSButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SOSButton.swift; sourceTree = "<group>"; };
+		B1000006000200000000011A /* ETABadge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ETABadge.swift; sourceTree = "<group>"; };
+		B1000006000200000000012A /* LoadingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoadingView.swift; sourceTree = "<group>"; };
+		B1000006000200000000013A /* ShimmerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShimmerView.swift; sourceTree = "<group>"; };
+		B1000006000200000000014A /* EmptyStateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmptyStateView.swift; sourceTree = "<group>"; };
+		B1000006000200000000015A /* ToastView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToastView.swift; sourceTree = "<group>"; };
+		B1000006000200000000016A /* PrecisionIndicator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrecisionIndicator.swift; sourceTree = "<group>"; };
+		/* Legacy Views */
+		B1000007000200000000001A /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		B1000007000200000000002A /* InsightsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = InsightsView.swift; path = Views/InsightsView.swift; sourceTree = "<group>"; };
+		B1000007000200000000003A /* LocationHistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = LocationHistoryView.swift; path = Views/LocationHistoryView.swift; sourceTree = "<group>"; };
+		B1000007000200000000004A /* GeofenceDebugView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = GeofenceDebugView.swift; path = Views/Components/GeofenceDebugView.swift; sourceTree = "<group>"; };
+		B1000007000200000000005A /* AppTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppTheme.swift; path = Theme/AppTheme.swift; sourceTree = "<group>"; };
+		/* Resources */
+		B1000008000200000000001A /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		B1000008000200000000002A /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
+		B1000008000200000000003A /* Localizable.strings */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; path = Localizable.strings; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -110,119 +269,9 @@
 		A1000001001100000000001A = {
 			isa = PBXGroup;
 			children = (
-				A1000001001200000000001A /* Life380 */,
+				B1000010000000000000001A /* Life380 */,
 				A1000001001500000000001A /* Products */,
 			);
-			sourceTree = "<group>";
-		};
-		A1000001001200000000001A /* Life380 */ = {
-			isa = PBXGroup;
-			children = (
-				A1000001001700000000001A /* Life380App.swift */,
-				A1000001001700000000002A /* ContentView.swift */,
-				A1000001001200000000002A /* Views */,
-				A1000001001200000000003A /* Models */,
-				A1000001001200000000004A /* Services */,
-				A1000001001200000000008A /* Theme */,
-				A1000001001700000000003A /* Assets.xcassets */,
-				A1000001001700000000011A /* Info.plist */,
-			);
-			path = Life380;
-			sourceTree = "<group>";
-		};
-		A1000001001200000000002A /* Views */ = {
-			isa = PBXGroup;
-			children = (
-				A1000001001700000000004A /* MapView.swift */,
-				A1000001001700000000005A /* PlacesView.swift */,
-				A1000001001700000000006A /* CircleView.swift */,
-				A1000001001700000000007A /* SettingsView.swift */,
-				A1000001001700000000035A /* InsightsView.swift */,
-				A1000001001700000000038A /* LocationHistoryView.swift */,
-				A1000001001200000000005A /* Auth */,
-				A1000001001200000000006A /* Legal */,
-				A1000001001200000000007A /* Settings */,
-				A1000001001200000000009A /* Components */,
-			);
-			path = Views;
-			sourceTree = "<group>";
-		};
-		A1000001001200000000003A /* Models */ = {
-			isa = PBXGroup;
-			children = (
-				A1000001001700000000008A /* FamilyMember.swift */,
-				A1000001001700000000009A /* Place.swift */,
-				A1000001001700000000014A /* UserProfile.swift */,
-				A1000001001700000000015A /* Circle.swift */,
-				A1000001001700000000024A /* PrecisionLocation.swift */,
-				A1000001001700000000033A /* Insights.swift */,
-			);
-			path = Models;
-			sourceTree = "<group>";
-		};
-		A1000001001200000000004A /* Services */ = {
-			isa = PBXGroup;
-			children = (
-				A1000001001700000000010A /* LocationManager.swift */,
-				A1000001001700000000025A /* PrecisionLocationManager.swift */,
-				A1000001001700000000012A /* AuthenticationService.swift */,
-				A1000001001700000000013A /* FirestoreService.swift */,
-				A1000001001700000000028A /* NotificationService.swift */,
-				A1000001001700000000029A /* ETAService.swift */,
-				A1000001001700000000031A /* SOSService.swift */,
-				A1000001001700000000034A /* InsightsService.swift */,
-				A1000001001700000000037A /* BiometricAuthService.swift */,
-				A1000001001700000000039A /* SecurityService.swift */,
-				A1000001001700000000023A /* GoogleService-Info.plist */,
-			);
-			path = Services;
-			sourceTree = "<group>";
-		};
-		A1000001001200000000005A /* Auth */ = {
-			isa = PBXGroup;
-			children = (
-				A1000001001700000000016A /* LoginView.swift */,
-				A1000001001700000000017A /* SignUpView.swift */,
-				A1000001001700000000018A /* ForgotPasswordView.swift */,
-			);
-			path = Auth;
-			sourceTree = "<group>";
-		};
-		A1000001001200000000006A /* Legal */ = {
-			isa = PBXGroup;
-			children = (
-				A1000001001700000000019A /* TermsOfServiceView.swift */,
-				A1000001001700000000020A /* PrivacyPolicyView.swift */,
-			);
-			path = Legal;
-			sourceTree = "<group>";
-		};
-		A1000001001200000000007A /* Settings */ = {
-			isa = PBXGroup;
-			children = (
-				A1000001001700000000021A /* DeleteAccountView.swift */,
-				A1000001001700000000036A /* BetaFeedbackView.swift */,
-			);
-			path = Settings;
-			sourceTree = "<group>";
-		};
-		A1000001001200000000008A /* Theme */ = {
-			isa = PBXGroup;
-			children = (
-				A1000001001700000000022A /* AppTheme.swift */,
-			);
-			path = Theme;
-			sourceTree = "<group>";
-		};
-		A1000001001200000000009A /* Components */ = {
-			isa = PBXGroup;
-			children = (
-				A1000001001700000000026A /* PrecisionIndicator.swift */,
-				A1000001001700000000027A /* GeofenceDebugView.swift */,
-				A1000001001700000000030A /* ETABadge.swift */,
-				A1000001001700000000032A /* SOSButton.swift */,
-			);
-			path = Components;
 			sourceTree = "<group>";
 		};
 		A1000001001500000000001A /* Products */ = {
@@ -231,6 +280,531 @@
 				A1000001001600000000001A /* Life380.app */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		/* Main Life380 Group */
+		B1000010000000000000001A /* Life380 */ = {
+			isa = PBXGroup;
+			children = (
+				B1000010000000000000002A /* App */,
+				B1000010000000000000003A /* Core */,
+				B1000010000000000000004A /* Models */,
+				B1000010000000000000005A /* Services */,
+				B1000010000000000000006A /* Features */,
+				B1000010000000000000007A /* UI */,
+				B1000010000000000000008A /* Resources */,
+				B1000010000000000000009A /* Legacy */,
+				A1000001001700000000011A /* Info.plist */,
+				A1000001001700000000040A /* Life380.entitlements */,
+			);
+			path = Life380;
+			sourceTree = "<group>";
+		};
+		/* App Group */
+		B1000010000000000000002A /* App */ = {
+			isa = PBXGroup;
+			children = (
+				B1000001000200000000001A /* Life380App.swift */,
+				B1000001000200000000002A /* AppDelegate.swift */,
+				B1000010000000000000010A /* Configuration */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		B1000010000000000000010A /* Configuration */ = {
+			isa = PBXGroup;
+			children = (
+				B1000001000200000000003A /* AppConfig.swift */,
+				B1000001000200000000004A /* Environment.swift */,
+				B1000001000200000000005A /* Constants.swift */,
+			);
+			path = Configuration;
+			sourceTree = "<group>";
+		};
+		/* Core Group */
+		B1000010000000000000003A /* Core */ = {
+			isa = PBXGroup;
+			children = (
+				B1000010000000000000011A /* Extensions */,
+				B1000010000000000000012A /* Utilities */,
+				B1000010000000000000013A /* Protocols */,
+			);
+			path = Core;
+			sourceTree = "<group>";
+		};
+		B1000010000000000000011A /* Extensions */ = {
+			isa = PBXGroup;
+			children = (
+				B1000002000200000000001A /* Date+Extensions.swift */,
+				B1000002000200000000002A /* String+Extensions.swift */,
+				B1000002000200000000003A /* View+Extensions.swift */,
+				B1000002000200000000004A /* CLLocation+Extensions.swift */,
+				B1000002000200000000005A /* Color+Extensions.swift */,
+			);
+			path = Extensions;
+			sourceTree = "<group>";
+		};
+		B1000010000000000000012A /* Utilities */ = {
+			isa = PBXGroup;
+			children = (
+				B1000002000200000000006A /* Logger.swift */,
+				B1000002000200000000007A /* Haptics.swift */,
+				B1000002000200000000008A /* KeychainManager.swift */,
+				B1000002000200000000009A /* NetworkMonitor.swift */,
+			);
+			path = Utilities;
+			sourceTree = "<group>";
+		};
+		B1000010000000000000013A /* Protocols */ = {
+			isa = PBXGroup;
+			children = (
+				B1000002000200000000010A /* LocationServiceProtocol.swift */,
+				B1000002000200000000011A /* AuthServiceProtocol.swift */,
+				B1000002000200000000012A /* CircleServiceProtocol.swift */,
+			);
+			path = Protocols;
+			sourceTree = "<group>";
+		};
+		/* Models Group */
+		B1000010000000000000004A /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				B1000010000000000000014A /* User */,
+				B1000010000000000000015A /* Circle */,
+				B1000010000000000000016A /* Location */,
+				B1000010000000000000017A /* Enums */,
+				B1000010000000000000018A /* Insights */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		B1000010000000000000014A /* User */ = {
+			isa = PBXGroup;
+			children = (
+				B1000003000200000000001A /* UserProfile.swift */,
+				B1000003000200000000002A /* UserSettings.swift */,
+			);
+			path = User;
+			sourceTree = "<group>";
+		};
+		B1000010000000000000015A /* Circle */ = {
+			isa = PBXGroup;
+			children = (
+				B1000003000200000000003A /* Circle.swift */,
+				B1000003000200000000004A /* CircleMember.swift */,
+				B1000003000200000000005A /* CircleInvite.swift */,
+			);
+			path = Circle;
+			sourceTree = "<group>";
+		};
+		B1000010000000000000016A /* Location */ = {
+			isa = PBXGroup;
+			children = (
+				B1000003000200000000006A /* Place.swift */,
+				B1000003000200000000007A /* UserLocation.swift */,
+			);
+			path = Location;
+			sourceTree = "<group>";
+		};
+		B1000010000000000000017A /* Enums */ = {
+			isa = PBXGroup;
+			children = (
+				B1000003000200000000008A /* LocationAccuracy.swift */,
+				B1000003000200000000009A /* MemberStatus.swift */,
+				B1000003000200000000010A /* InviteStatus.swift */,
+			);
+			path = Enums;
+			sourceTree = "<group>";
+		};
+		B1000010000000000000018A /* Insights */ = {
+			isa = PBXGroup;
+			children = (
+				B1000003000200000000011A /* Insights.swift */,
+			);
+			path = Insights;
+			sourceTree = "<group>";
+		};
+		/* Services Group */
+		B1000010000000000000005A /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				B1000010000000000000019A /* Auth */,
+				B1000010000000000000020A /* Location */,
+				B1000010000000000000021A /* Firebase */,
+				B1000010000000000000022A /* Circle */,
+				B1000010000000000000023A /* Safety */,
+				B1000010000000000000024A /* Analytics */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		B1000010000000000000019A /* Auth */ = {
+			isa = PBXGroup;
+			children = (
+				B1000004000200000000001A /* AuthService.swift */,
+				B1000004000200000000002A /* BiometricAuthService.swift */,
+			);
+			path = Auth;
+			sourceTree = "<group>";
+		};
+		B1000010000000000000020A /* Location */ = {
+			isa = PBXGroup;
+			children = (
+				B1000004000200000000003A /* LocationManager.swift */,
+				B1000004000200000000004A /* PrecisionLocationManager.swift */,
+				B1000004000200000000005A /* GeocodingService.swift */,
+			);
+			path = Location;
+			sourceTree = "<group>";
+		};
+		B1000010000000000000021A /* Firebase */ = {
+			isa = PBXGroup;
+			children = (
+				B1000004000200000000006A /* FirestoreService.swift */,
+				B1000004000200000000007A /* FirebaseAuthService.swift */,
+				B1000004000200000000008A /* PushNotificationService.swift */,
+			);
+			path = Firebase;
+			sourceTree = "<group>";
+		};
+		B1000010000000000000022A /* Circle */ = {
+			isa = PBXGroup;
+			children = (
+				B1000004000200000000009A /* CircleService.swift */,
+				B1000004000200000000010A /* InviteService.swift */,
+			);
+			path = Circle;
+			sourceTree = "<group>";
+		};
+		B1000010000000000000023A /* Safety */ = {
+			isa = PBXGroup;
+			children = (
+				B1000004000200000000011A /* SOSService.swift */,
+				B1000004000200000000012A /* SecurityService.swift */,
+			);
+			path = Safety;
+			sourceTree = "<group>";
+		};
+		B1000010000000000000024A /* Analytics */ = {
+			isa = PBXGroup;
+			children = (
+				B1000004000200000000013A /* InsightsService.swift */,
+				B1000004000200000000014A /* ETAService.swift */,
+			);
+			path = Analytics;
+			sourceTree = "<group>";
+		};
+		/* Features Group */
+		B1000010000000000000006A /* Features */ = {
+			isa = PBXGroup;
+			children = (
+				B1000010000000000000025A /* Authentication */,
+				B1000010000000000000026A /* Home */,
+				B1000010000000000000027A /* Circles */,
+				B1000010000000000000028A /* Invites */,
+				B1000010000000000000029A /* Places */,
+				B1000010000000000000030A /* Settings */,
+			);
+			path = Features;
+			sourceTree = "<group>";
+		};
+		B1000010000000000000025A /* Authentication */ = {
+			isa = PBXGroup;
+			children = (
+				B1000010000000000000031A /* Views */,
+				B1000010000000000000032A /* ViewModels */,
+			);
+			path = Authentication;
+			sourceTree = "<group>";
+		};
+		B1000010000000000000031A /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				B1000005000200000000001A /* LoginView.swift */,
+				B1000005000200000000002A /* SignUpView.swift */,
+				B1000005000200000000003A /* ForgotPasswordView.swift */,
+				B1000010000000000000033A /* Components */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		B1000010000000000000033A /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				B1000005000200000000004A /* AuthTextField.swift */,
+				B1000005000200000000005A /* SocialLoginButtons.swift */,
+			);
+			path = Components;
+			sourceTree = "<group>";
+		};
+		B1000010000000000000032A /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				B1000005000200000000006A /* AuthViewModel.swift */,
+			);
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
+		B1000010000000000000026A /* Home */ = {
+			isa = PBXGroup;
+			children = (
+				B1000010000000000000034A /* Views */,
+				B1000010000000000000035A /* ViewModels */,
+			);
+			path = Home;
+			sourceTree = "<group>";
+		};
+		B1000010000000000000034A /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				B1000005000200000000007A /* HomeView.swift */,
+				B1000005000200000000008A /* MapView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		B1000010000000000000035A /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				B1000005000200000000009A /* HomeViewModel.swift */,
+			);
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
+		B1000010000000000000027A /* Circles */ = {
+			isa = PBXGroup;
+			children = (
+				B1000010000000000000036A /* Views */,
+				B1000010000000000000037A /* ViewModels */,
+			);
+			path = Circles;
+			sourceTree = "<group>";
+		};
+		B1000010000000000000036A /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				B1000005000200000000010A /* CircleListView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		B1000010000000000000037A /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				B1000005000200000000011A /* CircleListViewModel.swift */,
+				B1000005000200000000012A /* CircleDetailViewModel.swift */,
+			);
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
+		B1000010000000000000028A /* Invites */ = {
+			isa = PBXGroup;
+			children = (
+				B1000010000000000000038A /* Views */,
+				B1000010000000000000039A /* ViewModels */,
+			);
+			path = Invites;
+			sourceTree = "<group>";
+		};
+		B1000010000000000000038A /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				B1000005000200000000013A /* CreateCircleView.swift */,
+				B1000005000200000000014A /* JoinCircleView.swift */,
+				B1000005000200000000015A /* InviteToCircleView.swift */,
+				B1000005000200000000016A /* QRScannerView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		B1000010000000000000039A /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				B1000005000200000000017A /* InviteViewModel.swift */,
+			);
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
+		B1000010000000000000029A /* Places */ = {
+			isa = PBXGroup;
+			children = (
+				B1000010000000000000040A /* Views */,
+				B1000010000000000000041A /* ViewModels */,
+			);
+			path = Places;
+			sourceTree = "<group>";
+		};
+		B1000010000000000000040A /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				B1000005000200000000018A /* PlacesListView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		B1000010000000000000041A /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				B1000005000200000000019A /* PlacesViewModel.swift */,
+			);
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
+		B1000010000000000000030A /* Settings */ = {
+			isa = PBXGroup;
+			children = (
+				B1000010000000000000042A /* Views */,
+				B1000010000000000000043A /* ViewModels */,
+				B1000010000000000000044A /* Legal */,
+			);
+			path = Settings;
+			sourceTree = "<group>";
+		};
+		B1000010000000000000042A /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				B1000005000200000000020A /* SettingsView.swift */,
+				B1000005000200000000021A /* DeleteAccountView.swift */,
+				B1000005000200000000022A /* BetaFeedbackView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		B1000010000000000000043A /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				B1000005000200000000025A /* SettingsViewModel.swift */,
+			);
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
+		B1000010000000000000044A /* Legal */ = {
+			isa = PBXGroup;
+			children = (
+				B1000005000200000000023A /* PrivacyPolicyView.swift */,
+				B1000005000200000000024A /* TermsOfServiceView.swift */,
+			);
+			path = Legal;
+			sourceTree = "<group>";
+		};
+		/* UI Group */
+		B1000010000000000000007A /* UI */ = {
+			isa = PBXGroup;
+			children = (
+				B1000010000000000000045A /* Theme */,
+				B1000010000000000000046A /* Styles */,
+				B1000010000000000000047A /* Components */,
+			);
+			path = UI;
+			sourceTree = "<group>";
+		};
+		B1000010000000000000045A /* Theme */ = {
+			isa = PBXGroup;
+			children = (
+				B1000006000200000000001A /* Colors.swift */,
+				B1000006000200000000002A /* Fonts.swift */,
+				B1000006000200000000003A /* Spacing.swift */,
+				B1000006000200000000004A /* Shadows.swift */,
+			);
+			path = Theme;
+			sourceTree = "<group>";
+		};
+		B1000010000000000000046A /* Styles */ = {
+			isa = PBXGroup;
+			children = (
+				B1000006000200000000005A /* ButtonStyles.swift */,
+				B1000006000200000000006A /* CardStyles.swift */,
+				B1000006000200000000007A /* TextStyles.swift */,
+			);
+			path = Styles;
+			sourceTree = "<group>";
+		};
+		B1000010000000000000047A /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				B1000010000000000000048A /* Buttons */,
+				B1000010000000000000049A /* Badges */,
+				B1000010000000000000050A /* Loading */,
+				B1000010000000000000051A /* Empty */,
+				B1000010000000000000052A /* Alerts */,
+				B1000010000000000000053A /* Indicators */,
+			);
+			path = Components;
+			sourceTree = "<group>";
+		};
+		B1000010000000000000048A /* Buttons */ = {
+			isa = PBXGroup;
+			children = (
+				B1000006000200000000008A /* PrimaryButton.swift */,
+				B1000006000200000000009A /* IconButton.swift */,
+				B1000006000200000000010A /* SOSButton.swift */,
+			);
+			path = Buttons;
+			sourceTree = "<group>";
+		};
+		B1000010000000000000049A /* Badges */ = {
+			isa = PBXGroup;
+			children = (
+				B1000006000200000000011A /* ETABadge.swift */,
+			);
+			path = Badges;
+			sourceTree = "<group>";
+		};
+		B1000010000000000000050A /* Loading */ = {
+			isa = PBXGroup;
+			children = (
+				B1000006000200000000012A /* LoadingView.swift */,
+				B1000006000200000000013A /* ShimmerView.swift */,
+			);
+			path = Loading;
+			sourceTree = "<group>";
+		};
+		B1000010000000000000051A /* Empty */ = {
+			isa = PBXGroup;
+			children = (
+				B1000006000200000000014A /* EmptyStateView.swift */,
+			);
+			path = Empty;
+			sourceTree = "<group>";
+		};
+		B1000010000000000000052A /* Alerts */ = {
+			isa = PBXGroup;
+			children = (
+				B1000006000200000000015A /* ToastView.swift */,
+			);
+			path = Alerts;
+			sourceTree = "<group>";
+		};
+		B1000010000000000000053A /* Indicators */ = {
+			isa = PBXGroup;
+			children = (
+				B1000006000200000000016A /* PrecisionIndicator.swift */,
+			);
+			path = Indicators;
+			sourceTree = "<group>";
+		};
+		/* Resources Group */
+		B1000010000000000000008A /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				B1000008000200000000001A /* Assets.xcassets */,
+				B1000008000200000000002A /* GoogleService-Info.plist */,
+				B1000008000200000000003A /* Localizable.strings */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		/* Legacy Group - files that still need old structure for now */
+		B1000010000000000000009A /* Legacy */ = {
+			isa = PBXGroup;
+			children = (
+				B1000007000200000000001A /* ContentView.swift */,
+				B1000007000200000000002A /* InsightsView.swift */,
+				B1000007000200000000003A /* LocationHistoryView.swift */,
+				B1000007000200000000004A /* GeofenceDebugView.swift */,
+				B1000007000200000000005A /* AppTheme.swift */,
+			);
+			name = Legacy;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -299,8 +873,9 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A1000001001800000000003A /* Assets.xcassets in Resources */,
-				A1000001001800000000022A /* GoogleService-Info.plist in Resources */,
+				B1000008000100000000001A /* Assets.xcassets in Resources */,
+				B1000008000100000000002A /* GoogleService-Info.plist in Resources */,
+				B1000008000100000000003A /* Localizable.strings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -311,42 +886,110 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A1000001001800000000001A /* Life380App.swift in Sources */,
-				A1000001001800000000002A /* ContentView.swift in Sources */,
-				A1000001001800000000004A /* MapView.swift in Sources */,
-				A1000001001800000000005A /* PlacesView.swift in Sources */,
-				A1000001001800000000006A /* CircleView.swift in Sources */,
-				A1000001001800000000007A /* SettingsView.swift in Sources */,
-				A1000001001800000000008A /* FamilyMember.swift in Sources */,
-				A1000001001800000000009A /* Place.swift in Sources */,
-				A1000001001800000000010A /* LocationManager.swift in Sources */,
-				A1000001001800000000011A /* AuthenticationService.swift in Sources */,
-				A1000001001800000000012A /* FirestoreService.swift in Sources */,
-				A1000001001800000000013A /* UserProfile.swift in Sources */,
-				A1000001001800000000014A /* Circle.swift in Sources */,
-				A1000001001800000000015A /* LoginView.swift in Sources */,
-				A1000001001800000000016A /* SignUpView.swift in Sources */,
-				A1000001001800000000017A /* ForgotPasswordView.swift in Sources */,
-				A1000001001800000000018A /* TermsOfServiceView.swift in Sources */,
-				A1000001001800000000019A /* PrivacyPolicyView.swift in Sources */,
-				A1000001001800000000020A /* DeleteAccountView.swift in Sources */,
-				A1000001001800000000021A /* AppTheme.swift in Sources */,
-				A1000001001800000000024A /* PrecisionLocation.swift in Sources */,
-				A1000001001800000000025A /* PrecisionLocationManager.swift in Sources */,
-				A1000001001800000000026A /* PrecisionIndicator.swift in Sources */,
-				A1000001001800000000027A /* GeofenceDebugView.swift in Sources */,
-				A1000001001800000000028A /* NotificationService.swift in Sources */,
-				A1000001001800000000029A /* ETAService.swift in Sources */,
-				A1000001001800000000030A /* ETABadge.swift in Sources */,
-				A1000001001800000000031A /* SOSService.swift in Sources */,
-				A1000001001800000000032A /* SOSButton.swift in Sources */,
-				A1000001001800000000033A /* Insights.swift in Sources */,
-				A1000001001800000000034A /* InsightsService.swift in Sources */,
-				A1000001001800000000035A /* InsightsView.swift in Sources */,
-				A1000001001800000000036A /* BetaFeedbackView.swift in Sources */,
-				A1000001001800000000037A /* BiometricAuthService.swift in Sources */,
-				A1000001001800000000038A /* LocationHistoryView.swift in Sources */,
-				A1000001001800000000039A /* SecurityService.swift in Sources */,
+				/* App */
+				B1000001000100000000001A /* Life380App.swift in Sources */,
+				B1000001000100000000002A /* AppDelegate.swift in Sources */,
+				B1000001000100000000003A /* AppConfig.swift in Sources */,
+				B1000001000100000000004A /* Environment.swift in Sources */,
+				B1000001000100000000005A /* Constants.swift in Sources */,
+				/* Core Extensions */
+				B1000002000100000000001A /* Date+Extensions.swift in Sources */,
+				B1000002000100000000002A /* String+Extensions.swift in Sources */,
+				B1000002000100000000003A /* View+Extensions.swift in Sources */,
+				B1000002000100000000004A /* CLLocation+Extensions.swift in Sources */,
+				B1000002000100000000005A /* Color+Extensions.swift in Sources */,
+				/* Core Utilities */
+				B1000002000100000000006A /* Logger.swift in Sources */,
+				B1000002000100000000007A /* Haptics.swift in Sources */,
+				B1000002000100000000008A /* KeychainManager.swift in Sources */,
+				B1000002000100000000009A /* NetworkMonitor.swift in Sources */,
+				/* Core Protocols */
+				B1000002000100000000010A /* LocationServiceProtocol.swift in Sources */,
+				B1000002000100000000011A /* AuthServiceProtocol.swift in Sources */,
+				B1000002000100000000012A /* CircleServiceProtocol.swift in Sources */,
+				/* Models */
+				B1000003000100000000001A /* UserProfile.swift in Sources */,
+				B1000003000100000000002A /* UserSettings.swift in Sources */,
+				B1000003000100000000003A /* Circle.swift in Sources */,
+				B1000003000100000000004A /* CircleMember.swift in Sources */,
+				B1000003000100000000005A /* CircleInvite.swift in Sources */,
+				B1000003000100000000006A /* Place.swift in Sources */,
+				B1000003000100000000007A /* UserLocation.swift in Sources */,
+				B1000003000100000000008A /* LocationAccuracy.swift in Sources */,
+				B1000003000100000000009A /* MemberStatus.swift in Sources */,
+				B1000003000100000000010A /* InviteStatus.swift in Sources */,
+				B1000003000100000000011A /* Insights.swift in Sources */,
+				/* Services */
+				B1000004000100000000001A /* AuthService.swift in Sources */,
+				B1000004000100000000002A /* BiometricAuthService.swift in Sources */,
+				B1000004000100000000003A /* LocationManager.swift in Sources */,
+				B1000004000100000000004A /* PrecisionLocationManager.swift in Sources */,
+				B1000004000100000000005A /* GeocodingService.swift in Sources */,
+				B1000004000100000000006A /* FirestoreService.swift in Sources */,
+				B1000004000100000000007A /* FirebaseAuthService.swift in Sources */,
+				B1000004000100000000008A /* PushNotificationService.swift in Sources */,
+				B1000004000100000000009A /* CircleService.swift in Sources */,
+				B1000004000100000000010A /* InviteService.swift in Sources */,
+				B1000004000100000000011A /* SOSService.swift in Sources */,
+				B1000004000100000000012A /* SecurityService.swift in Sources */,
+				B1000004000100000000013A /* InsightsService.swift in Sources */,
+				B1000004000100000000014A /* ETAService.swift in Sources */,
+				/* Features Authentication */
+				B1000005000100000000001A /* LoginView.swift in Sources */,
+				B1000005000100000000002A /* SignUpView.swift in Sources */,
+				B1000005000100000000003A /* ForgotPasswordView.swift in Sources */,
+				B1000005000100000000004A /* AuthTextField.swift in Sources */,
+				B1000005000100000000005A /* SocialLoginButtons.swift in Sources */,
+				B1000005000100000000006A /* AuthViewModel.swift in Sources */,
+				/* Features Home */
+				B1000005000100000000007A /* HomeView.swift in Sources */,
+				B1000005000100000000008A /* MapView.swift in Sources */,
+				B1000005000100000000009A /* HomeViewModel.swift in Sources */,
+				/* Features Circles */
+				B1000005000100000000010A /* CircleListView.swift in Sources */,
+				B1000005000100000000011A /* CircleListViewModel.swift in Sources */,
+				B1000005000100000000012A /* CircleDetailViewModel.swift in Sources */,
+				/* Features Invites */
+				/* B1000005000100000000013A  CreateCircleView.swift in Sources - conflicts with SettingsView.swift embedded version */
+				/* B1000005000100000000014A  JoinCircleView.swift in Sources - conflicts with SettingsView.swift embedded version */
+				B1000005000100000000015A /* InviteToCircleView.swift in Sources */,
+				B1000005000100000000016A /* QRScannerView.swift in Sources */,
+				B1000005000100000000017A /* InviteViewModel.swift in Sources */,
+				/* Features Places */
+				B1000005000100000000018A /* PlacesListView.swift in Sources */,
+				B1000005000100000000019A /* PlacesViewModel.swift in Sources */,
+				/* Features Settings */
+				B1000005000100000000020A /* SettingsView.swift in Sources */,
+				B1000005000100000000021A /* DeleteAccountView.swift in Sources */,
+				B1000005000100000000022A /* BetaFeedbackView.swift in Sources */,
+				B1000005000100000000023A /* PrivacyPolicyView.swift in Sources */,
+				B1000005000100000000024A /* TermsOfServiceView.swift in Sources */,
+				B1000005000100000000025A /* SettingsViewModel.swift in Sources */,
+				/* UI Theme - using AppTheme.swift from Legacy instead */
+				/* B1000006000100000000001A  Colors.swift in Sources - conflicts with AppTheme.swift */
+				/* B1000006000100000000002A  Fonts.swift in Sources - conflicts with AppTheme.swift */
+				/* B1000006000100000000003A  Spacing.swift in Sources - conflicts with AppTheme.swift */
+				/* B1000006000100000000004A  Shadows.swift in Sources - conflicts with AppTheme.swift */
+				/* UI Styles - using AppTheme.swift from Legacy instead */
+				/* B1000006000100000000005A  ButtonStyles.swift in Sources - conflicts with AppTheme.swift */
+				/* B1000006000100000000006A  CardStyles.swift in Sources - conflicts with AppTheme.swift */
+				/* B1000006000100000000007A  TextStyles.swift in Sources - conflicts with AppTheme.swift */
+				/* UI Components */
+				B1000006000100000000008A /* PrimaryButton.swift in Sources */,
+				B1000006000100000000009A /* IconButton.swift in Sources */,
+				B1000006000100000000010A /* SOSButton.swift in Sources */,
+				B1000006000100000000011A /* ETABadge.swift in Sources */,
+				B1000006000100000000012A /* LoadingView.swift in Sources */,
+				B1000006000100000000013A /* ShimmerView.swift in Sources */,
+				B1000006000100000000014A /* EmptyStateView.swift in Sources */,
+				B1000006000100000000015A /* ToastView.swift in Sources */,
+				B1000006000100000000016A /* PrecisionIndicator.swift in Sources */,
+				/* Legacy */
+				B1000007000100000000001A /* ContentView.swift in Sources */,
+				B1000007000100000000002A /* InsightsView.swift in Sources */,
+				B1000007000100000000003A /* LocationHistoryView.swift in Sources */,
+				B1000007000100000000004A /* GeofenceDebugView.swift in Sources */,
+				B1000007000100000000005A /* AppTheme.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

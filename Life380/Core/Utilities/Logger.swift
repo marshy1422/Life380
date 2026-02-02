@@ -14,7 +14,8 @@ enum LogLevel: Int, Comparable {
 }
 
 /// Centralized logging utility for the app
-enum Logger {
+/// Note: Named AppLogger to avoid conflict with OSLog's Logger type
+enum AppLogger {
     private static let subsystem = Bundle.main.bundleIdentifier ?? "com.life380"
 
     private static let general = OSLog(subsystem: subsystem, category: "general")
@@ -32,10 +33,10 @@ enum Logger {
 
         var osLog: OSLog {
             switch self {
-            case .general: return Logger.general
-            case .location: return Logger.location
-            case .network: return Logger.network
-            case .auth: return Logger.auth
+            case .general: return AppLogger.general
+            case .location: return AppLogger.location
+            case .network: return AppLogger.network
+            case .auth: return AppLogger.auth
             }
         }
     }

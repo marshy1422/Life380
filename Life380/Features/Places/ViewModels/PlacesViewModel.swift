@@ -1,6 +1,7 @@
 import Foundation
 import CoreLocation
 import Combine
+import SwiftUI
 
 /// ViewModel for places management
 @MainActor
@@ -36,25 +37,25 @@ class PlacesViewModel: ObservableObject {
 
     init(firestoreService: FirestoreService = .shared) {
         self.firestoreService = firestoreService
+        setupBindings()
+    }
+
+    private func setupBindings() {
+        // Listen to places from FirestoreService
+        firestoreService.$places
+            .receive(on: DispatchQueue.main)
+            .assign(to: &$places)
     }
 
     // MARK: - Data Loading
 
-    func loadPlaces(for userId: String) async {
-        isLoading = true
-        defer { isLoading = false }
-
-        do {
-            places = try await firestoreService.fetchPlaces(userId: userId)
-        } catch {
-            errorMessage = error.localizedDescription
-            showError = true
-        }
+    func loadPlaces(for circleId: String) {
+        firestoreService.listenToPlaces(circleId: circleId)
     }
 
     // MARK: - Place CRUD
 
-    func addPlace(for userId: String) async -> Bool {
+    func addPlace(to circleId: String) async -> Bool {
         guard validateNewPlace() else { return false }
         guard let coordinate = newPlaceCoordinate else {
             errorMessage = "Please select a location"
@@ -77,8 +78,7 @@ class PlacesViewModel: ObservableObject {
         )
 
         do {
-            try await firestoreService.savePlace(place, userId: userId)
-            places.append(place)
+            try await firestoreService.addPlace(place, circleId: circleId)
             resetNewPlaceForm()
             return true
         } catch {
@@ -88,30 +88,12 @@ class PlacesViewModel: ObservableObject {
         }
     }
 
-    func updatePlace(_ place: Place, for userId: String) async -> Bool {
+    func deletePlace(_ place: Place, from circleId: String) async -> Bool {
         isLoading = true
         defer { isLoading = false }
 
         do {
-            try await firestoreService.savePlace(place, userId: userId)
-            if let index = places.firstIndex(where: { $0.id == place.id }) {
-                places[index] = place
-            }
-            return true
-        } catch {
-            errorMessage = error.localizedDescription
-            showError = true
-            return false
-        }
-    }
-
-    func deletePlace(_ place: Place, for userId: String) async -> Bool {
-        isLoading = true
-        defer { isLoading = false }
-
-        do {
-            try await firestoreService.deletePlace(place.id, userId: userId)
-            places.removeAll { $0.id == place.id }
+            try await firestoreService.deletePlace(placeId: place.id, circleId: circleId)
             return true
         } catch {
             errorMessage = error.localizedDescription

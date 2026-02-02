@@ -1,6 +1,8 @@
 import Foundation
 import CoreLocation
 import Combine
+import MapKit
+import SwiftUI
 
 /// ViewModel for the home/map screen
 @MainActor

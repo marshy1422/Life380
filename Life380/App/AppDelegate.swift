@@ -37,7 +37,7 @@ class AppDelegate: NSObject, UIApplicationDelegate {
         _ application: UIApplication,
         didFailToRegisterForRemoteNotificationsWithError error: Error
     ) {
-        Logger.log("Failed to register for remote notifications: \(error.localizedDescription)", level: .error)
+        AppLogger.log("Failed to register for remote notifications: \(error.localizedDescription)", level: .error)
     }
 }
 
@@ -103,6 +103,6 @@ extension AppDelegate: UNUserNotificationCenterDelegate {
 
     private func handleCustomAction(_ action: String, userInfo: [AnyHashable: Any]) {
         // Handle custom notification actions
-        Logger.log("Custom action: \(action)", level: .debug)
+        AppLogger.log("Custom action: \(action)", level: .debug)
     }
 }

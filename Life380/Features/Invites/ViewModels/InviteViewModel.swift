@@ -15,6 +15,8 @@ class InviteViewModel: ObservableObject {
     @Published var successMessage = ""
 
     @Published var generatedInvite: CircleInvite?
+    @Published var validatedCircle: FamilyCircle?
+    @Published var validatedMemberCount: Int = 0
 
     // MARK: - Dependencies
 
@@ -80,12 +82,12 @@ class InviteViewModel: ObservableObject {
 
     // MARK: - Generate Invite
 
-    func generateInvite(for circle: FamilyCircle, by userId: String, userName: String) async {
+    func generateInvite(for circle: FamilyCircle) async {
         isLoading = true
         defer { isLoading = false }
 
         do {
-            generatedInvite = try await inviteService.createInvite(for: circle, by: userId, userName: userName)
+            generatedInvite = try await inviteService.createInvite(for: circle)
         } catch {
             errorMessage = error.localizedDescription
             showError = true
@@ -94,15 +96,18 @@ class InviteViewModel: ObservableObject {
 
     // MARK: - Validate Invite
 
-    func validateInviteCode(_ code: String) async -> CircleInvite? {
+    func validateInviteCode(_ code: String) async -> Bool {
         let trimmedCode = code.trimmingCharacters(in: .whitespaces).uppercased()
 
         do {
-            return try await inviteService.validateInviteCode(trimmedCode)
+            let result = try await inviteService.validateInviteCode(trimmedCode)
+            validatedCircle = result.circle
+            validatedMemberCount = result.memberCount
+            return true
         } catch {
             errorMessage = error.localizedDescription
             showError = true
-            return nil
+            return false
         }
     }
 
@@ -122,6 +127,8 @@ class InviteViewModel: ObservableObject {
         inviteCode = ""
         circleName = ""
         generatedInvite = nil
+        validatedCircle = nil
+        validatedMemberCount = 0
         clearError()
         clearSuccess()
     }
