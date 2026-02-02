@@ -296,6 +296,12 @@ struct UserProfile: Identifiable, Codable, Equatable {
     // MARK: - Equatable
 
     static func == (lhs: UserProfile, rhs: UserProfile) -> Bool {
-        lhs.id == rhs.id
+        // Include location fields so SwiftUI detects location updates
+        lhs.id == rhs.id &&
+        lhs.latitude == rhs.latitude &&
+        lhs.longitude == rhs.longitude &&
+        lhs.lastUpdated == rhs.lastUpdated &&
+        lhs.batteryLevel == rhs.batteryLevel &&
+        lhs.isLocationSharing == rhs.isLocationSharing
     }
 }

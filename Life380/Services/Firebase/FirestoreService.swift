@@ -288,10 +288,13 @@ class FirestoreService: ObservableObject {
                           let data = snapshot?.data(),
                           let profile = UserProfile(dictionary: data) else { return }
 
-                    if let index = self.circleMembers.firstIndex(where: { $0.id == profile.id }) {
-                        self.circleMembers[index] = profile
-                    } else {
-                        self.circleMembers.append(profile)
+                    // CRITICAL: Update on main thread for SwiftUI state safety
+                    DispatchQueue.main.async {
+                        if let index = self.circleMembers.firstIndex(where: { $0.id == profile.id }) {
+                            self.circleMembers[index] = profile
+                        } else {
+                            self.circleMembers.append(profile)
+                        }
                     }
                 }
 

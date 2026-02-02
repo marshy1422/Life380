@@ -8,15 +8,15 @@ struct MapView: View {
     @EnvironmentObject var firestoreService: FirestoreService
     @EnvironmentObject var locationManager: PrecisionLocationManager  // Use shared instance
     @StateObject private var sosService = SOSService.shared
-    @State private var cameraPosition = MapCameraPosition.region(MKCoordinateRegion(
-        center: CLLocationCoordinate2D(latitude: 37.7749, longitude: -122.4194),
-        span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
-    ))
+    // Start with user location tracking instead of hardcoded coordinates
+    @State private var cameraPosition: MapCameraPosition = .userLocation(fallback: .automatic)
     @State private var selectedMember: UserProfile?
     @State private var showPrecisionInfo: Bool = false
     @State private var showSOSSheet: Bool = false
     @State private var hasInitiallyLocated: Bool = false
     @State private var isRefreshing: Bool = false
+    @State private var isLoadingLocation: Bool = true
+    @State private var locationError: String?
 
     // Task management to prevent memory leaks
     @State private var locationUpdateTask: Task<Void, Never>?
@@ -43,6 +43,20 @@ struct MapView: View {
     private var mainContent: some View {
         ZStack {
             mapView
+
+            // Loading overlay while waiting for first location
+            if isLoadingLocation && locationManager.currentLocation == nil {
+                locationLoadingOverlay
+            }
+
+            // Error banner if location access denied
+            if let error = locationError {
+                VStack {
+                    locationErrorBanner(error)
+                    Spacer()
+                }
+            }
+
             MapOverlayView(
                 locationManager: locationManager,
                 showPrecisionInfo: $showPrecisionInfo,
@@ -87,6 +101,34 @@ struct MapView: View {
                     ))
                 }
                 hasInitiallyLocated = true
+                isLoadingLocation = false
+                locationError = nil
+            }
+        }
+        .onChange(of: locationManager.authorizationStatus) { _, newStatus in
+            // Handle permission changes
+            switch newStatus {
+            case .denied, .restricted:
+                isLoadingLocation = false
+                locationError = "Location access denied. Enable in Settings to see your location."
+            case .authorizedWhenInUse, .authorizedAlways:
+                locationError = nil
+            default:
+                break
+            }
+        }
+        .task {
+            // Timeout for initial location - show error after 15 seconds
+            try? await Task.sleep(nanoseconds: 15_000_000_000)
+            if locationManager.currentLocation == nil && isLoadingLocation {
+                isLoadingLocation = false
+                if locationManager.authorizationStatus == .notDetermined {
+                    locationError = "Waiting for location permission..."
+                } else if locationManager.authorizationStatus == .denied {
+                    locationError = "Location access denied. Enable in Settings."
+                } else {
+                    locationError = "Unable to get location. Please try again."
+                }
             }
         }
         .onDisappear {
@@ -196,7 +238,52 @@ struct MapView: View {
                 ))
             }
             hasInitiallyLocated = true
+            isLoadingLocation = false
         }
+    }
+
+    // MARK: - Loading & Error Views
+
+    private var locationLoadingOverlay: some View {
+        VStack(spacing: 16) {
+            ProgressView()
+                .scaleEffect(1.5)
+                .tint(.white)
+
+            Text("Getting your location...")
+                .font(.headline)
+                .foregroundColor(.white)
+
+            Text("Please ensure location services are enabled")
+                .font(.caption)
+                .foregroundColor(.white.opacity(0.8))
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color.black.opacity(0.5))
+    }
+
+    private func locationErrorBanner(_ message: String) -> some View {
+        HStack {
+            Image(systemName: "location.slash.fill")
+                .foregroundColor(.white)
+
+            Text(message)
+                .font(.subheadline)
+                .foregroundColor(.white)
+
+            Spacer()
+
+            Button("Settings") {
+                if let url = URL(string: UIApplication.openSettingsURLString) {
+                    UIApplication.shared.open(url)
+                }
+            }
+            .font(.subheadline.bold())
+            .foregroundColor(.white)
+        }
+        .padding()
+        .background(Color.orange)
+        .cornerRadius(0)
     }
 
     private func refreshLocations() {

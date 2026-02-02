@@ -15,10 +15,9 @@ class HomeViewModel: ObservableObject {
     @Published var isLoading = false
     @Published var errorMessage: String?
 
-    @Published var mapRegion: MKCoordinateRegion = MKCoordinateRegion(
-        center: CLLocationCoordinate2D(latitude: 37.7749, longitude: -122.4194),
-        span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
-    )
+    // Map region - nil until real location is available, avoiding hardcoded fallback coordinates
+    @Published var mapRegion: MKCoordinateRegion?
+    @Published var hasInitialLocation = false
 
     // MARK: - State
 
@@ -51,14 +50,7 @@ class HomeViewModel: ObservableObject {
         selectedMember = member
 
         // Center map on member if they have a valid location
-        if let coordinate = member.coordinate {
-            withAnimation {
-                mapRegion = MKCoordinateRegion(
-                    center: coordinate,
-                    span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01)
-                )
-            }
-        }
+        centerOnMember(member)
     }
 
     func clearSelection() {
