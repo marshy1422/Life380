@@ -1,0 +1,94 @@
+/*
+  Localizable.strings
+  Life380
+
+  Localization file for internationalization support.
+*/
+
+// MARK: - Common
+"common.ok" = "OK";
+"common.cancel" = "Cancel";
+"common.save" = "Save";
+"common.delete" = "Delete";
+"common.edit" = "Edit";
+"common.done" = "Done";
+"common.close" = "Close";
+"common.next" = "Next";
+"common.back" = "Back";
+"common.retry" = "Retry";
+"common.loading" = "Loading...";
+"common.error" = "Error";
+"common.success" = "Success";
+
+// MARK: - Authentication
+"auth.login" = "Log In";
+"auth.signup" = "Sign Up";
+"auth.logout" = "Log Out";
+"auth.email" = "Email";
+"auth.password" = "Password";
+"auth.confirmPassword" = "Confirm Password";
+"auth.forgotPassword" = "Forgot Password?";
+"auth.resetPassword" = "Reset Password";
+"auth.signInWithApple" = "Sign in with Apple";
+"auth.createAccount" = "Create Account";
+"auth.alreadyHaveAccount" = "Already have an account?";
+"auth.dontHaveAccount" = "Don't have an account?";
+
+// MARK: - Circles
+"circle.title" = "Circle";
+"circle.create" = "Create Circle";
+"circle.join" = "Join Circle";
+"circle.leave" = "Leave Circle";
+"circle.delete" = "Delete Circle";
+"circle.invite" = "Invite Members";
+"circle.inviteCode" = "Invite Code";
+"circle.members" = "Members";
+"circle.noMembers" = "No members yet";
+"circle.removeMember" = "Remove Member";
+
+// MARK: - Places
+"places.title" = "Places";
+"places.add" = "Add Place";
+"places.edit" = "Edit Place";
+"places.delete" = "Delete Place";
+"places.home" = "Home";
+"places.work" = "Work";
+"places.school" = "School";
+"places.noPlaces" = "No places saved";
+
+// MARK: - Map
+"map.title" = "Map";
+"map.centerOnMe" = "Center on Me";
+"map.showAll" = "Show All";
+"map.directions" = "Directions";
+
+// MARK: - Settings
+"settings.title" = "Settings";
+"settings.profile" = "Profile";
+"settings.notifications" = "Notifications";
+"settings.privacy" = "Privacy";
+"settings.location" = "Location";
+"settings.security" = "Security";
+"settings.help" = "Help & Support";
+"settings.about" = "About";
+"settings.deleteAccount" = "Delete Account";
+
+// MARK: - Location
+"location.sharing" = "Location Sharing";
+"location.sharingOn" = "Location sharing is on";
+"location.sharingOff" = "Location sharing is off";
+"location.lastUpdated" = "Last updated %@";
+"location.unknown" = "Unknown location";
+
+// MARK: - SOS
+"sos.title" = "SOS Alert";
+"sos.message" = "Emergency alert sent to your circle";
+"sos.cancel" = "Cancel SOS";
+
+// MARK: - Errors
+"error.generic" = "Something went wrong. Please try again.";
+"error.network" = "No internet connection";
+"error.invalidEmail" = "Please enter a valid email";
+"error.invalidPassword" = "Password must be at least 8 characters";
+"error.passwordMismatch" = "Passwords don't match";
+"error.locationPermission" = "Location permission required";
