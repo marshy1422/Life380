@@ -1,122 +1,73 @@
 import Foundation
 import Combine
 
-/// ViewModel for the circle list view
+enum CircleListState {
+    case loading
+    case empty
+    case loaded([FamilyCircle])
+    case error(String)
+}
+
 @MainActor
 class CircleListViewModel: ObservableObject {
     // MARK: - Published Properties
 
+    @Published var state: CircleListState = .loading
     @Published var circles: [FamilyCircle] = []
-    @Published var selectedCircle: FamilyCircle?
-    @Published var members: [UserProfile] = []
-
-    @Published var isLoading = false
-    @Published var errorMessage: String?
-    @Published var showError = false
-
-    @Published var showCreateCircle = false
-    @Published var showJoinCircle = false
-    @Published var showInviteToCircle = false
+    @Published var membersByCircle: [String: [UserProfile]] = [:]
 
     // MARK: - Dependencies
 
-    private let circleService: CircleService
     private let firestoreService: FirestoreService
     private var cancellables = Set<AnyCancellable>()
 
     // MARK: - Initialization
 
-    init(circleService: CircleService = .shared, firestoreService: FirestoreService = .shared) {
-        self.circleService = circleService
+    init(firestoreService: FirestoreService = .shared) {
         self.firestoreService = firestoreService
-
-        setupBindings()
     }
 
-    private func setupBindings() {
-        circleService.$circles
-            .assign(to: &$circles)
+    // MARK: - Observers
 
-        circleService.$selectedCircle
-            .assign(to: &$selectedCircle)
+    func startObserving() {
+        state = .loading
 
-        circleService.$errorMessage
-            .compactMap { $0 }
-            .sink { [weak self] error in
-                self?.errorMessage = error
-                self?.showError = true
+        // Observe circles from FirestoreService
+        firestoreService.$circles
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] circles in
+                self?.handleCirclesUpdate(circles)
             }
             .store(in: &cancellables)
     }
 
+    func stopObserving() {
+        cancellables.removeAll()
+    }
+
+    private func handleCirclesUpdate(_ circles: [FamilyCircle]) {
+        self.circles = circles
+
+        if circles.isEmpty {
+            state = .empty
+        } else {
+            state = .loaded(circles)
+        }
+    }
+
     // MARK: - Actions
 
-    func loadCircles(for userId: String) async {
-        isLoading = true
-        defer { isLoading = false }
+    func retry() {
+        startObserving()
+    }
 
+    func leaveCircle(_ circle: FamilyCircle) async -> Bool {
         do {
-            try await circleService.fetchCircles(for: userId)
+            try await firestoreService.leaveCircle(circleId: circle.id)
+            return true
         } catch {
-            errorMessage = error.localizedDescription
-            showError = true
+            state = .error(error.localizedDescription)
+            return false
         }
-    }
-
-    func selectCircle(_ circle: FamilyCircle) {
-        selectedCircle = circle
-        circleService.selectedCircle = circle
-
-        Task {
-            await loadMembers(for: circle.id)
-        }
-    }
-
-    func loadMembers(for circleId: String) async {
-        do {
-            members = try await circleService.fetchMembers(for: circleId)
-        } catch {
-            errorMessage = error.localizedDescription
-            showError = true
-        }
-    }
-
-    func leaveCircle(_ circleId: String, userId: String) async {
-        do {
-            try await circleService.leaveCircle(circleId, userId: userId)
-        } catch {
-            errorMessage = error.localizedDescription
-            showError = true
-        }
-    }
-
-    func deleteCircle(_ circleId: String, userId: String) async {
-        do {
-            try await circleService.deleteCircle(circleId, by: userId)
-        } catch {
-            errorMessage = error.localizedDescription
-            showError = true
-        }
-    }
-
-    func removeMember(_ memberId: String, from circleId: String, by userId: String) async {
-        do {
-            try await circleService.removeMember(memberId, from: circleId, by: userId)
-            await loadMembers(for: circleId)
-        } catch {
-            errorMessage = error.localizedDescription
-            showError = true
-        }
-    }
-
-    // MARK: - Helpers
-
-    func clearError() {
-        errorMessage = nil
-        showError = false
-    }
-
-    func isAdmin(userId: String, for circle: FamilyCircle?) -> Bool {
-        circle?.createdBy == userId
     }
 }

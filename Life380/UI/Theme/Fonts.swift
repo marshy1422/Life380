@@ -1,40 +1,22 @@
 import SwiftUI
 
-/// App typography definitions
-struct AppFonts {
-    // MARK: - Display Fonts
+enum AppFonts {
+    // Headlines
+    static let largeTitle = Font.system(size: 34, weight: .bold)
+    static let title1 = Font.system(size: 28, weight: .bold)
+    static let title2 = Font.system(size: 22, weight: .bold)
+    static let title3 = Font.system(size: 20, weight: .semibold)
 
-    static let largeTitle = Font.system(.largeTitle, design: .rounded).weight(.bold)
-    static let title = Font.system(.title, design: .rounded).weight(.semibold)
-    static let title2 = Font.system(.title2, design: .rounded).weight(.semibold)
-    static let title3 = Font.system(.title3, design: .rounded).weight(.medium)
+    // Body
+    static let bodyLarge = Font.system(size: 17, weight: .regular)
+    static let body = Font.system(size: 15, weight: .regular)
+    static let bodySmall = Font.system(size: 13, weight: .regular)
 
-    // MARK: - Body Fonts
+    // Labels
+    static let caption = Font.system(size: 12, weight: .medium)
+    static let captionSmall = Font.system(size: 11, weight: .regular)
 
-    static let headline = Font.system(.headline, design: .rounded)
-    static let body = Font.system(.body, design: .default)
-    static let callout = Font.system(.callout, design: .default)
-    static let subheadline = Font.system(.subheadline, design: .default)
-    static let footnote = Font.system(.footnote, design: .default)
-    static let caption = Font.system(.caption, design: .default)
-
-    // MARK: - Custom Fonts
-
-    static func custom(size: CGFloat, weight: Font.Weight = .regular, design: Font.Design = .default) -> Font {
-        Font.system(size: size, weight: weight, design: design)
-    }
-
-    static func rounded(size: CGFloat, weight: Font.Weight = .regular) -> Font {
-        Font.system(size: size, weight: weight, design: .rounded)
-    }
-
-    static func monospaced(size: CGFloat, weight: Font.Weight = .regular) -> Font {
-        Font.system(size: size, weight: weight, design: .monospaced)
-    }
-}
-
-// MARK: - Backward Compatibility
-
-extension AppTheme {
-    typealias Typography = AppFonts
+    // Buttons
+    static let button = Font.system(size: 17, weight: .semibold)
+    static let buttonSmall = Font.system(size: 15, weight: .medium)
 }
