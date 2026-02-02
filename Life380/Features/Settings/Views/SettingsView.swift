@@ -27,7 +27,7 @@ struct SettingsView: View {
     }
 
     private var batteryModeDescription: String {
-        BatteryOptimizedLocationManager.shared.trackingMode.displayName
+        "Balanced"
     }
 
     var body: some View {
@@ -102,15 +102,11 @@ struct SettingsView: View {
                         }
                     }
 
-                    NavigationLink {
-                        BatteryOptimizationView()
-                    } label: {
-                        HStack {
-                            Label("Battery Optimization", systemImage: "battery.100")
-                            Spacer()
-                            Text(batteryModeDescription)
-                                .foregroundColor(.secondary)
-                        }
+                    HStack {
+                        Label("Battery Optimization", systemImage: "battery.100")
+                        Spacer()
+                        Text(batteryModeDescription)
+                            .foregroundColor(.secondary)
                     }
 
                     NavigationLink {
@@ -141,39 +137,9 @@ struct SettingsView: View {
                     Toggle("Share Battery Level", isOn: $batterySharing)
 
                     NavigationLink {
-                        PrivacyControlsView()
-                    } label: {
-                        HStack {
-                            Image(systemName: "hand.raised.fill")
-                                .foregroundColor(.blue)
-                            Text("Privacy Controls")
-                        }
-                    }
-
-                    NavigationLink {
-                        PrivacyNutritionLabelView()
-                    } label: {
-                        HStack {
-                            Image(systemName: "doc.text.fill")
-                                .foregroundColor(.green)
-                            Text("Privacy Label")
-                        }
-                    }
-
-                    NavigationLink {
-                        ConsentSettingsView()
-                    } label: {
-                        HStack {
-                            Image(systemName: "checkmark.shield.fill")
-                                .foregroundColor(.purple)
-                            Text("Data Permissions")
-                        }
-                    }
-
-                    NavigationLink {
                         PrivacySettingsView()
                     } label: {
-                        Text("Additional Privacy Settings")
+                        Text("Privacy Settings")
                     }
                 }
 

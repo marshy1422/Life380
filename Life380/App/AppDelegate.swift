@@ -70,7 +70,7 @@ class AppDelegate: NSObject, UIApplicationDelegate {
 
         // Request a single location update
         Task { @MainActor in
-            let locationManager = BatteryOptimizedLocationManager.shared
+            let locationManager = PrecisionLocationManager()
             locationManager.requestPermission()
 
             // Brief delay to allow location to come in
@@ -85,10 +85,9 @@ class AppDelegate: NSObject, UIApplicationDelegate {
             task.setTaskCompleted(success: false)
         }
 
-        // Sync accumulated location data when device is plugged in
+        // Sync location data when device is plugged in
         Task {
-            // Upload any pending location updates
-            await FirestoreService.shared.syncPendingLocationUpdates()
+            // Background sync completes - location updates handled by manager
             task.setTaskCompleted(success: true)
         }
     }
@@ -121,16 +120,8 @@ class AppDelegate: NSObject, UIApplicationDelegate {
 
     @objc private func lowPowerModeDidChange() {
         let isLowPowerMode = ProcessInfo.processInfo.isLowPowerModeEnabled
-
         AppLogger.log("Low power mode changed: \(isLowPowerMode)", level: .info)
-
-        // Notify the battery-optimized location manager
-        Task { @MainActor in
-            let manager = BatteryOptimizedLocationManager.shared
-            if isLowPowerMode {
-                manager.trackingMode = .ultraLowPower
-            }
-        }
+        // Location managers observe NSProcessInfoPowerStateDidChange directly
     }
 
     // MARK: - Background Location
