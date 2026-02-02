@@ -7,10 +7,11 @@ struct HomeView: View {
     @EnvironmentObject var authService: AuthService
     @EnvironmentObject var firestoreService: FirestoreService
     @EnvironmentObject var locationManager: PrecisionLocationManager
+    @State private var memberToLocate: UserProfile?
 
     var body: some View {
         // Use the existing MapView which contains all the map functionality
-        MapView()
+        MapView(memberToLocate: $memberToLocate)
     }
 }
 

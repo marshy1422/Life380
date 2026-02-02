@@ -3,6 +3,8 @@ import UIKit
 
 struct CircleView: View {
     @EnvironmentObject var firestoreService: FirestoreService
+    @Binding var memberToLocate: UserProfile?
+    @Binding var selectedTab: Int
     @State private var showingCreateCircle = false
     @State private var showingJoinCircle = false
     @State private var deepLinkCode: String?
@@ -40,7 +42,9 @@ struct CircleView: View {
 
                 Section {
                     ForEach(firestoreService.circleMembers) { member in
-                        MemberRow(member: member)
+                        MemberRow(member: member, onLocate: {
+                            locateMember(member)
+                        })
                     }
                 } header: {
                     Text("Members (\(firestoreService.circleMembers.count))")
@@ -120,6 +124,12 @@ struct CircleView: View {
            let rootVC = windowScene.windows.first?.rootViewController {
             rootVC.present(activityVC, animated: true)
         }
+    }
+
+    private func locateMember(_ member: UserProfile) {
+        guard member.coordinate != nil else { return }
+        memberToLocate = member
+        selectedTab = 0  // Switch to Map tab
     }
 }
 
@@ -375,56 +385,74 @@ struct JoinCircleSheet: View {
 
 struct MemberRow: View {
     let member: UserProfile
+    var onLocate: (() -> Void)?
 
     var body: some View {
-        HStack(spacing: 12) {
-            Text(member.initials)
-                .font(.headline)
-                .foregroundColor(.white)
-                .frame(width: 50, height: 50)
-                .background(member.color)
-                .clipShape(Circle())
-
-            VStack(alignment: .leading, spacing: 4) {
-                Text(member.displayName)
+        Button(action: {
+            if member.isLocationSharing && member.coordinate != nil {
+                onLocate?()
+            }
+        }) {
+            HStack(spacing: 12) {
+                Text(member.initials)
                     .font(.headline)
+                    .foregroundColor(.white)
+                    .frame(width: 50, height: 50)
+                    .background(member.color)
+                    .clipShape(Circle())
+
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(member.displayName)
+                        .font(.headline)
+                        .foregroundColor(.primary)
+
+                    if member.isLocationSharing {
+                        HStack(spacing: 4) {
+                            Image(systemName: "clock")
+                                .font(.caption)
+                            Text(member.lastUpdatedText)
+                                .font(.caption)
+                        }
+                        .foregroundColor(.secondary)
+                    } else {
+                        HStack(spacing: 4) {
+                            Image(systemName: "location.slash")
+                                .font(.caption)
+                            Text("Location sharing off")
+                                .font(.caption)
+                        }
+                        .foregroundColor(.orange)
+                    }
+                }
+
+                Spacer()
 
                 if member.isLocationSharing {
-                    HStack(spacing: 4) {
-                        Image(systemName: "clock")
-                            .font(.caption)
-                        Text(member.lastUpdatedText)
-                            .font(.caption)
+                    HStack(spacing: 12) {
+                        VStack(spacing: 4) {
+                            Image(systemName: member.batteryIcon)
+                                .foregroundColor(member.batteryColor)
+                            Text("\(member.batteryLevel)%")
+                                .font(.caption2)
+                                .foregroundColor(.secondary)
+                        }
+
+                        // Locate button indicator
+                        if member.coordinate != nil {
+                            Image(systemName: "location.circle.fill")
+                                .font(.title2)
+                                .foregroundColor(.blue)
+                        }
                     }
-                    .foregroundColor(.secondary)
-                } else {
-                    HStack(spacing: 4) {
-                        Image(systemName: "location.slash")
-                            .font(.caption)
-                        Text("Location sharing off")
-                            .font(.caption)
-                    }
-                    .foregroundColor(.orange)
                 }
             }
-
-            Spacer()
-
-            if member.isLocationSharing {
-                VStack(spacing: 4) {
-                    Image(systemName: member.batteryIcon)
-                        .foregroundColor(member.batteryColor)
-                    Text("\(member.batteryLevel)%")
-                        .font(.caption2)
-                        .foregroundColor(.secondary)
-                }
-            }
+            .padding(.vertical, 4)
         }
-        .padding(.vertical, 4)
+        .buttonStyle(.plain)
     }
 }
 
 #Preview {
-    CircleView()
+    CircleView(memberToLocate: .constant(nil), selectedTab: .constant(3))
         .environmentObject(FirestoreService.shared)
 }

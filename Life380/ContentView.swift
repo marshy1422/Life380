@@ -6,10 +6,11 @@ struct ContentView: View {
     @EnvironmentObject var locationManager: PrecisionLocationManager  // Use shared instance
     @State private var selectedTab = 0
     @State private var hasUpdatedInitialLocation = false
+    @State private var memberToLocate: UserProfile?
 
     var body: some View {
         TabView(selection: $selectedTab) {
-            MapView()
+            MapView(memberToLocate: $memberToLocate)
                 .tag(0)
                 .tabItem {
                     Image(systemName: "map.fill")
@@ -30,7 +31,7 @@ struct ContentView: View {
                     Text("Insights")
                 }
 
-            CircleView()
+            CircleView(memberToLocate: $memberToLocate, selectedTab: $selectedTab)
                 .tag(3)
                 .tabItem {
                     Image(systemName: "person.3.fill")

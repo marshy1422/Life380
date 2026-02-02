@@ -8,6 +8,8 @@ struct MapView: View {
     @EnvironmentObject var firestoreService: FirestoreService
     @EnvironmentObject var locationManager: PrecisionLocationManager  // Use shared instance
     @StateObject private var sosService = SOSService.shared
+    // Binding to receive member to locate from Circle tab
+    @Binding var memberToLocate: UserProfile?
     // Start with user location tracking instead of hardcoded coordinates
     @State private var cameraPosition: MapCameraPosition = .userLocation(fallback: .automatic)
     @State private var selectedMember: UserProfile?
@@ -36,6 +38,20 @@ struct MapView: View {
         }
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.didBecomeActiveNotification)) { _ in
             locationManager.handleAppBecameActive()
+        }
+        .onChange(of: memberToLocate) { _, member in
+            if let member = member, let coordinate = member.coordinate {
+                // Center map on the member's location and show their detail card
+                withAnimation(.easeInOut(duration: 0.5)) {
+                    cameraPosition = .region(MKCoordinateRegion(
+                        center: coordinate,
+                        span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01)
+                    ))
+                    selectedMember = member
+                }
+                // Clear the binding after handling
+                memberToLocate = nil
+            }
         }
     }
 
@@ -1098,7 +1114,7 @@ struct EnhancedETARow: View {
 }
 
 #Preview {
-    MapView()
+    MapView(memberToLocate: .constant(nil))
         .environmentObject(FirestoreService.shared)
         .environmentObject(PrecisionLocationManager())
 }
