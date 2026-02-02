@@ -21,9 +21,9 @@ class CircleDetailViewModel: ObservableObject {
 
     // MARK: - Initialization
 
-    init(circle: FamilyCircle, circleService: CircleService = .shared) {
+    init(circle: FamilyCircle, circleService: CircleService? = nil) {
         self.circle = circle
-        self.circleService = circleService
+        self.circleService = circleService ?? CircleService.shared
         self.newCircleName = circle.name
     }
 

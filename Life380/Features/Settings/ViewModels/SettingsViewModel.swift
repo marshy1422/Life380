@@ -34,9 +34,9 @@ class SettingsViewModel: ObservableObject {
 
     // MARK: - Initialization
 
-    init(authService: AuthService, firestoreService: FirestoreService = .shared) {
+    init(authService: AuthService, firestoreService: FirestoreService? = nil) {
         self.authService = authService
-        self.firestoreService = firestoreService
+        self.firestoreService = firestoreService ?? FirestoreService.shared
     }
 
     // MARK: - Profile Updates

@@ -344,7 +344,7 @@ class LocationSmoother {
                 #if DEBUG
                 print("⚠️ Rejected location jump: \(Int(distance))m in \(Int(timeDelta))s")
                 #endif
-                return lastAcceptedLocation!
+                return lastLocation
             }
         }
 

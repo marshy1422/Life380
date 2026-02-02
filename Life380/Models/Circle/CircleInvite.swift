@@ -6,43 +6,60 @@ struct CircleInvite: Identifiable, Codable {
     let id: String
     let circleId: String
     let circleName: String
+    var circleEmoji: String?
     let inviteCode: String
-    let invitedBy: String           // User ID who created the invite
-    let invitedByName: String       // Display name for UI
+    let invitedBy: String
+    let invitedByName: String
     let createdAt: Date
-    let expiresAt: Date?            // Optional expiration
-    var usedBy: String?             // User ID who used the invite
+    let expiresAt: Date?
+    var usedBy: String?
     var usedAt: Date?
     var isActive: Bool
 
-    /// Check if invite is still valid
+    // MARK: - Computed Properties
+
+    var isExpired: Bool {
+        guard let expires = expiresAt else { return false }
+        return Date() > expires
+    }
+
+    var isUsed: Bool {
+        usedBy != nil
+    }
+
     var isValid: Bool {
         guard isActive else { return false }
-        guard usedBy == nil else { return false }
-        if let expires = expiresAt, Date() > expires {
-            return false
-        }
+        guard !isUsed else { return false }
+        guard !isExpired else { return false }
         return true
     }
 
-    /// Time remaining until expiration
-    var timeRemaining: String? {
-        guard let expires = expiresAt else { return nil }
+    var timeRemaining: String {
+        guard let expires = expiresAt else { return "No expiration" }
         let remaining = expires.timeIntervalSince(Date())
         if remaining <= 0 { return "Expired" }
 
-        let hours = Int(remaining / 3600)
-        let minutes = Int((remaining.truncatingRemainder(dividingBy: 3600)) / 60)
+        let formatter = DateComponentsFormatter()
+        formatter.allowedUnits = [.day, .hour, .minute]
+        formatter.unitsStyle = .abbreviated
+        formatter.maximumUnitCount = 2
 
-        if hours > 24 {
-            let days = hours / 24
-            return "\(days) day\(days == 1 ? "" : "s") left"
-        } else if hours > 0 {
-            return "\(hours)h \(minutes)m left"
-        } else {
-            return "\(minutes)m left"
-        }
+        return formatter.string(from: remaining) ?? "Expired"
     }
+
+    var deepLink: URL? {
+        URL(string: "life380://join?code=\(inviteCode)")
+    }
+
+    var shareLink: URL? {
+        URL(string: "https://life380.app/join/\(inviteCode)")
+    }
+
+    var shareText: String {
+        "Join my Life380 circle \"\(circleName)\"! Use invite code: \(inviteCode) or tap: life380://join?code=\(inviteCode)"
+    }
+
+    // MARK: - Dictionary Conversion
 
     var dictionary: [String: Any] {
         var dict: [String: Any] = [
@@ -55,22 +72,22 @@ struct CircleInvite: Identifiable, Codable {
             "createdAt": createdAt,
             "isActive": isActive
         ]
-        if let expiresAt = expiresAt {
-            dict["expiresAt"] = expiresAt
-        }
-        if let usedBy = usedBy {
-            dict["usedBy"] = usedBy
-        }
-        if let usedAt = usedAt {
-            dict["usedAt"] = usedAt
-        }
+
+        if let circleEmoji = circleEmoji { dict["circleEmoji"] = circleEmoji }
+        if let expiresAt = expiresAt { dict["expiresAt"] = expiresAt }
+        if let usedBy = usedBy { dict["usedBy"] = usedBy }
+        if let usedAt = usedAt { dict["usedAt"] = usedAt }
+
         return dict
     }
+
+    // MARK: - Initialization
 
     init(
         id: String = UUID().uuidString,
         circleId: String,
         circleName: String,
+        circleEmoji: String? = nil,
         inviteCode: String,
         invitedBy: String,
         invitedByName: String,
@@ -83,6 +100,7 @@ struct CircleInvite: Identifiable, Codable {
         self.id = id
         self.circleId = circleId
         self.circleName = circleName
+        self.circleEmoji = circleEmoji
         self.inviteCode = inviteCode
         self.invitedBy = invitedBy
         self.invitedByName = invitedByName
@@ -107,6 +125,7 @@ struct CircleInvite: Identifiable, Codable {
         self.id = id
         self.circleId = circleId
         self.circleName = circleName
+        self.circleEmoji = dictionary["circleEmoji"] as? String
         self.inviteCode = inviteCode
         self.invitedBy = invitedBy
         self.invitedByName = invitedByName
@@ -116,6 +135,8 @@ struct CircleInvite: Identifiable, Codable {
         // Parse dates
         if let timestamp = dictionary["createdAt"] as? Timestamp {
             self.createdAt = timestamp.dateValue()
+        } else if let date = dictionary["createdAt"] as? Date {
+            self.createdAt = date
         } else {
             self.createdAt = Date()
         }
@@ -123,27 +144,20 @@ struct CircleInvite: Identifiable, Codable {
         if let timestamp = dictionary["expiresAt"] as? Timestamp {
             self.expiresAt = timestamp.dateValue()
         } else {
-            self.expiresAt = nil
+            self.expiresAt = dictionary["expiresAt"] as? Date
         }
 
         if let timestamp = dictionary["usedAt"] as? Timestamp {
             self.usedAt = timestamp.dateValue()
         } else {
-            self.usedAt = nil
+            self.usedAt = dictionary["usedAt"] as? Date
         }
     }
 }
 
-// MARK: - Invite Link Generation
+// MARK: - Backward Compatibility
 
 extension CircleInvite {
-    /// Generate a deep link URL for this invite
-    var deepLinkURL: URL? {
-        URL(string: "life380://join?code=\(inviteCode)")
-    }
-
-    /// Generate a shareable text message
-    var shareText: String {
-        "Join my Life380 circle \"\(circleName)\"! Use invite code: \(inviteCode) or tap: life380://join?code=\(inviteCode)"
-    }
+    /// Alias for backward compatibility
+    var deepLinkURL: URL? { deepLink }
 }

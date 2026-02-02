@@ -38,10 +38,10 @@ class FirestoreService: ObservableObject {
             latitude: latitude,  // nil means location not yet available (avoids "Null Island" bug)
             longitude: longitude,
             lastUpdated: Date(),
+            horizontalAccuracy: accuracy,
             batteryLevel: 100,
             isLocationSharing: true,
-            circleIds: [],
-            horizontalAccuracy: accuracy
+            circleIds: []
         )
 
         try await db.collection("users").document(userId).setData(profile.dictionary)

@@ -35,8 +35,8 @@ class PlacesViewModel: ObservableObject {
 
     // MARK: - Initialization
 
-    init(firestoreService: FirestoreService = .shared) {
-        self.firestoreService = firestoreService
+    init(firestoreService: FirestoreService? = nil) {
+        self.firestoreService = firestoreService ?? FirestoreService.shared
         setupBindings()
     }
 

@@ -25,9 +25,9 @@ class InviteViewModel: ObservableObject {
 
     // MARK: - Initialization
 
-    init(circleService: CircleService = .shared, inviteService: InviteService = .shared) {
-        self.circleService = circleService
-        self.inviteService = inviteService
+    init(circleService: CircleService? = nil, inviteService: InviteService? = nil) {
+        self.circleService = circleService ?? CircleService.shared
+        self.inviteService = inviteService ?? InviteService.shared
     }
 
     // MARK: - Create Circle

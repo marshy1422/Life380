@@ -30,10 +30,11 @@ class HomeViewModel: ObservableObject {
 
     func loadInitialData() async {
         isLoading = true
-        defer { isLoading = false }
 
         // Data loading will happen through the existing services
         // This ViewModel coordinates the UI state
+
+        isLoading = false
     }
 
     func refreshMembers() async {
