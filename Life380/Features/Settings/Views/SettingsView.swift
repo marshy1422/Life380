@@ -12,6 +12,11 @@ struct SettingsView: View {
 
     @State private var showingBiometricAuth = false
     @State private var pendingLocationSharingValue = true
+    @AppStorage(Constants.UserDefaultsKey.preferredMapsApp) private var preferredMapsApp = Constants.MapsProvider.apple.rawValue
+
+    private var currentMapsProvider: Constants.MapsProvider {
+        Constants.MapsProvider(rawValue: preferredMapsApp) ?? .apple
+    }
 
     private var appVersion: String {
         Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0.0"
@@ -19,6 +24,10 @@ struct SettingsView: View {
 
     private var buildNumber: String {
         Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "1"
+    }
+
+    private var batteryModeDescription: String {
+        BatteryOptimizedLocationManager.shared.trackingMode.displayName
     }
 
     var body: some View {
@@ -92,6 +101,28 @@ struct SettingsView: View {
                                 .foregroundColor(.secondary)
                         }
                     }
+
+                    NavigationLink {
+                        BatteryOptimizationView()
+                    } label: {
+                        HStack {
+                            Label("Battery Optimization", systemImage: "battery.100")
+                            Spacer()
+                            Text(batteryModeDescription)
+                                .foregroundColor(.secondary)
+                        }
+                    }
+
+                    NavigationLink {
+                        MapsPreferenceView()
+                    } label: {
+                        HStack {
+                            Text("Preferred Maps App")
+                            Spacer()
+                            Text(currentMapsProvider.displayName)
+                                .foregroundColor(.secondary)
+                        }
+                    }
                 }
 
                 // Notifications
@@ -106,13 +137,43 @@ struct SettingsView: View {
                 }
 
                 // Privacy
-                Section("Privacy") {
+                Section("Privacy & Security") {
                     Toggle("Share Battery Level", isOn: $batterySharing)
+
+                    NavigationLink {
+                        PrivacyControlsView()
+                    } label: {
+                        HStack {
+                            Image(systemName: "hand.raised.fill")
+                                .foregroundColor(.blue)
+                            Text("Privacy Controls")
+                        }
+                    }
+
+                    NavigationLink {
+                        PrivacyNutritionLabelView()
+                    } label: {
+                        HStack {
+                            Image(systemName: "doc.text.fill")
+                                .foregroundColor(.green)
+                            Text("Privacy Label")
+                        }
+                    }
+
+                    NavigationLink {
+                        ConsentSettingsView()
+                    } label: {
+                        HStack {
+                            Image(systemName: "checkmark.shield.fill")
+                                .foregroundColor(.purple)
+                            Text("Data Permissions")
+                        }
+                    }
 
                     NavigationLink {
                         PrivacySettingsView()
                     } label: {
-                        Text("Privacy Settings")
+                        Text("Additional Privacy Settings")
                     }
                 }
 
@@ -286,6 +347,58 @@ struct LocationAccuracyView: View {
         case "low": return "Lower precision, saves battery"
         default: return ""
         }
+    }
+}
+
+struct MapsPreferenceView: View {
+    @AppStorage(Constants.UserDefaultsKey.preferredMapsApp) private var preferredMapsApp = Constants.MapsProvider.apple.rawValue
+
+    var body: some View {
+        List {
+            Section {
+                ForEach(Constants.MapsProvider.allCases, id: \.rawValue) { provider in
+                    HStack {
+                        Image(systemName: provider.icon)
+                            .foregroundColor(provider == .apple ? .blue : .green)
+                            .frame(width: 30)
+
+                        Text(provider.displayName)
+                            .font(.body)
+
+                        Spacer()
+
+                        if preferredMapsApp == provider.rawValue {
+                            Image(systemName: "checkmark")
+                                .foregroundColor(.blue)
+                        }
+                    }
+                    .contentShape(Rectangle())
+                    .onTapGesture {
+                        preferredMapsApp = provider.rawValue
+                    }
+                }
+            } footer: {
+                Text("Choose which maps app opens when you tap 'Directions' to a family member's location.")
+            }
+
+            Section {
+                if !isGoogleMapsInstalled {
+                    HStack {
+                        Image(systemName: "info.circle")
+                            .foregroundColor(.orange)
+                        Text("Google Maps not installed. Will open in browser instead.")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                }
+            }
+        }
+        .navigationTitle("Preferred Maps App")
+    }
+
+    private var isGoogleMapsInstalled: Bool {
+        guard let url = URL(string: "comgooglemaps://") else { return false }
+        return UIApplication.shared.canOpenURL(url)
     }
 }
 

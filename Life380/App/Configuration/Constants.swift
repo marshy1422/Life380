@@ -51,6 +51,27 @@ enum Constants {
         static let locationSharingEnabled = "locationSharingEnabled"
         static let notificationsEnabled = "notificationsEnabled"
         static let biometricAuthEnabled = "biometricAuthEnabled"
+        static let preferredMapsApp = "preferredMapsApp"
+    }
+
+    // MARK: - Maps Provider
+    enum MapsProvider: String, CaseIterable {
+        case apple = "apple"
+        case google = "google"
+
+        var displayName: String {
+            switch self {
+            case .apple: return "Apple Maps"
+            case .google: return "Google Maps"
+            }
+        }
+
+        var icon: String {
+            switch self {
+            case .apple: return "map.fill"
+            case .google: return "g.circle.fill"
+            }
+        }
     }
 
     // MARK: - Keychain Keys

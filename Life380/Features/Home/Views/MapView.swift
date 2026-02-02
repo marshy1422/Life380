@@ -906,11 +906,29 @@ struct MemberDetailCard: View {
 
     private func openDirections() {
         guard let coordinate = member.coordinate else { return }
-        let mapItem = MKMapItem(placemark: MKPlacemark(coordinate: coordinate))
-        mapItem.name = member.displayName
-        mapItem.openInMaps(launchOptions: [
-            MKLaunchOptionsDirectionsModeKey: MKLaunchOptionsDirectionsModeDriving
-        ])
+
+        // Check user's preferred maps app
+        let preferredMaps = UserDefaults.standard.string(forKey: Constants.UserDefaultsKey.preferredMapsApp) ?? Constants.MapsProvider.apple.rawValue
+
+        if preferredMaps == Constants.MapsProvider.google.rawValue {
+            // Open Google Maps
+            let googleMapsURL = URL(string: "comgooglemaps://?daddr=\(coordinate.latitude),\(coordinate.longitude)&directionsmode=driving")
+            let googleMapsWebURL = URL(string: "https://www.google.com/maps/dir/?api=1&destination=\(coordinate.latitude),\(coordinate.longitude)&travelmode=driving")
+
+            if let url = googleMapsURL, UIApplication.shared.canOpenURL(url) {
+                UIApplication.shared.open(url)
+            } else if let webURL = googleMapsWebURL {
+                // Fallback to web if Google Maps app not installed
+                UIApplication.shared.open(webURL)
+            }
+        } else {
+            // Open Apple Maps (default)
+            let mapItem = MKMapItem(placemark: MKPlacemark(coordinate: coordinate))
+            mapItem.name = member.displayName
+            mapItem.openInMaps(launchOptions: [
+                MKLaunchOptionsDirectionsModeKey: MKLaunchOptionsDirectionsModeDriving
+            ])
+        }
     }
 
     private func makeCall() {
