@@ -3,6 +3,7 @@ import UserNotifications
 import FirebaseCore
 import FirebaseMessaging
 import CoreLocation
+import BackgroundTasks
 
 /// AppDelegate for handling push notifications and app lifecycle events
 class AppDelegate: NSObject, UIApplicationDelegate {
@@ -17,13 +18,119 @@ class AppDelegate: NSObject, UIApplicationDelegate {
         // Configure push notifications
         configureNotifications(application)
 
+        // Register background tasks for battery-efficient updates
+        registerBackgroundTasks()
+
         // Check if app was launched due to a location event (app was terminated)
         if launchOptions?[.location] != nil {
             AppLogger.log("App launched from location event - restarting location monitoring", level: .info)
             restartBackgroundLocationMonitoring()
         }
 
+        // Observe low power mode changes
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(lowPowerModeDidChange),
+            name: .NSProcessInfoPowerStateDidChange,
+            object: nil
+        )
+
         return true
+    }
+
+    // MARK: - Background Tasks Registration
+
+    private func registerBackgroundTasks() {
+        // Register for background app refresh (periodic location updates)
+        BGTaskScheduler.shared.register(
+            forTaskWithIdentifier: "com.life380.app.locationRefresh",
+            using: nil
+        ) { task in
+            self.handleLocationRefreshTask(task as! BGAppRefreshTask)
+        }
+
+        // Register for background processing (sync when plugged in)
+        BGTaskScheduler.shared.register(
+            forTaskWithIdentifier: "com.life380.app.locationSync",
+            using: nil
+        ) { task in
+            self.handleLocationSyncTask(task as! BGProcessingTask)
+        }
+
+        AppLogger.log("Registered background tasks", level: .debug)
+    }
+
+    private func handleLocationRefreshTask(_ task: BGAppRefreshTask) {
+        // Schedule the next refresh
+        scheduleBackgroundRefresh()
+
+        task.expirationHandler = {
+            task.setTaskCompleted(success: false)
+        }
+
+        // Request a single location update
+        Task { @MainActor in
+            let locationManager = BatteryOptimizedLocationManager.shared
+            locationManager.requestPermission()
+
+            // Brief delay to allow location to come in
+            try? await Task.sleep(nanoseconds: 5_000_000_000)
+
+            task.setTaskCompleted(success: true)
+        }
+    }
+
+    private func handleLocationSyncTask(_ task: BGProcessingTask) {
+        task.expirationHandler = {
+            task.setTaskCompleted(success: false)
+        }
+
+        // Sync accumulated location data when device is plugged in
+        Task {
+            // Upload any pending location updates
+            await FirestoreService.shared.syncPendingLocationUpdates()
+            task.setTaskCompleted(success: true)
+        }
+    }
+
+    func scheduleBackgroundRefresh() {
+        let request = BGAppRefreshTaskRequest(identifier: "com.life380.app.locationRefresh")
+        request.earliestBeginDate = Date(timeIntervalSinceNow: 15 * 60) // 15 minutes
+
+        do {
+            try BGTaskScheduler.shared.submit(request)
+            AppLogger.log("Scheduled background refresh", level: .debug)
+        } catch {
+            AppLogger.log("Failed to schedule background refresh: \(error.localizedDescription)", level: .error)
+        }
+    }
+
+    func scheduleBackgroundSync() {
+        let request = BGProcessingTaskRequest(identifier: "com.life380.app.locationSync")
+        request.requiresNetworkConnectivity = true
+        request.requiresExternalPower = true // Only sync when charging
+
+        do {
+            try BGTaskScheduler.shared.submit(request)
+        } catch {
+            AppLogger.log("Failed to schedule background sync: \(error.localizedDescription)", level: .error)
+        }
+    }
+
+    // MARK: - Low Power Mode
+
+    @objc private func lowPowerModeDidChange() {
+        let isLowPowerMode = ProcessInfo.processInfo.isLowPowerModeEnabled
+
+        AppLogger.log("Low power mode changed: \(isLowPowerMode)", level: .info)
+
+        // Notify the battery-optimized location manager
+        Task { @MainActor in
+            let manager = BatteryOptimizedLocationManager.shared
+            if isLowPowerMode {
+                manager.trackingMode = .ultraLowPower
+            }
+        }
     }
 
     // MARK: - Background Location

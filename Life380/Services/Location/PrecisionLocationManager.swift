@@ -1497,9 +1497,151 @@ extension PrecisionLocationManager: CLLocationManagerDelegate {
     }
 }
 
+// MARK: - Visit Monitoring Delegate
+
+extension PrecisionLocationManager {
+
+    /// Start visit monitoring for battery-efficient place detection
+    func startVisitMonitoring() {
+        locationManager.startMonitoringVisits()
+        logger.info("Started visit monitoring")
+    }
+
+    /// Stop visit monitoring
+    func stopVisitMonitoring() {
+        locationManager.stopMonitoringVisits()
+    }
+
+    func locationManager(_ manager: CLLocationManager, didVisit visit: CLVisit) {
+        let isArrival = visit.departureDate == Date.distantFuture
+
+        logger.info("Visit \(isArrival ? "arrival" : "departure") at (\(visit.coordinate.latitude), \(visit.coordinate.longitude))")
+
+        #if DEBUG
+        let emoji = isArrival ? "📍" : "🚶"
+        print("\(emoji) [VISIT] \(isArrival ? "Arrived" : "Departed") at (\(visit.coordinate.latitude), \(visit.coordinate.longitude))")
+        if !isArrival {
+            let duration = visit.departureDate.timeIntervalSince(visit.arrivalDate)
+            print("   Duration: \(Int(duration / 60)) minutes")
+        }
+        #endif
+
+        // Post notification for the app to handle
+        NotificationCenter.default.post(
+            name: .didReceiveVisit,
+            object: nil,
+            userInfo: [
+                "visit": visit,
+                "isArrival": isArrival,
+                "coordinate": visit.coordinate
+            ]
+        )
+
+        // Get a precise location after a visit event
+        if isInBackground {
+            locationManager.requestLocation()
+        }
+
+        // Record for insights
+        Task { @MainActor in
+            if isArrival {
+                InsightsService.shared.recordPlaceEntry(
+                    placeId: "visit_\(UUID().uuidString)",
+                    placeName: "Visit Location",
+                    coordinate: visit.coordinate
+                )
+            }
+        }
+    }
+}
+
+// MARK: - Battery-Aware Configuration
+
+extension PrecisionLocationManager {
+
+    /// Configure for low power mode
+    func configureLowPowerMode() {
+        locationManager.desiredAccuracy = kCLLocationAccuracyKilometer
+        locationManager.distanceFilter = 500
+        locationManager.pausesLocationUpdatesAutomatically = true
+
+        // Stop continuous updates, rely on visits and significant changes
+        locationManager.stopUpdatingLocation()
+        locationManager.startMonitoringSignificantLocationChanges()
+        startVisitMonitoring()
+
+        logger.info("Configured for low power mode")
+    }
+
+    /// Configure for balanced mode (default)
+    func configureBalancedMode() {
+        locationManager.desiredAccuracy = kCLLocationAccuracyHundredMeters
+        locationManager.distanceFilter = 100
+        locationManager.pausesLocationUpdatesAutomatically = true
+
+        // Use motion-adaptive tracking
+        adaptToMotionState()
+        startVisitMonitoring()
+
+        logger.info("Configured for balanced mode")
+    }
+
+    /// Configure for high accuracy mode
+    func configureHighAccuracyMode() {
+        locationManager.desiredAccuracy = kCLLocationAccuracyBest
+        locationManager.distanceFilter = 10
+        locationManager.pausesLocationUpdatesAutomatically = false
+
+        locationManager.startUpdatingLocation()
+        startVisitMonitoring()
+
+        logger.info("Configured for high accuracy mode")
+    }
+
+    /// Respond to system low power mode changes
+    func handleLowPowerModeChange(_ isEnabled: Bool) {
+        if isEnabled {
+            configureLowPowerMode()
+        } else {
+            configureBalancedMode()
+        }
+    }
+}
+
+// MARK: - Deferred Location Updates
+
+extension PrecisionLocationManager {
+
+    /// Enable deferred location updates for battery efficiency
+    /// Only works when app allows background location updates
+    func enableDeferredUpdates(distance: CLLocationDistance = 1000, timeout: TimeInterval = 600) {
+        guard CLLocationManager.deferredLocationUpdatesAvailable() else {
+            logger.warning("Deferred location updates not available on this device")
+            return
+        }
+
+        locationManager.allowDeferredLocationUpdates(untilTraveled: distance, timeout: timeout)
+        logger.info("Enabled deferred updates: \(Int(distance))m or \(Int(timeout))s")
+    }
+
+    /// Disable deferred location updates
+    func disableDeferredUpdates() {
+        locationManager.disallowDeferredLocationUpdates()
+    }
+
+    func locationManager(_ manager: CLLocationManager, didFinishDeferredUpdatesWithError error: Error?) {
+        if let error = error {
+            logger.error("Deferred updates finished with error: \(error.localizedDescription)")
+        } else {
+            logger.info("Deferred updates delivered successfully")
+        }
+    }
+}
+
 // MARK: - Notification Names
 
 extension Notification.Name {
     static let didEnterGeofence = Notification.Name("didEnterGeofence")
     static let didExitGeofence = Notification.Name("didExitGeofence")
+    static let didReceiveVisit = Notification.Name("didReceiveVisit")
 }

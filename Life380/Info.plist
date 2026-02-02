@@ -31,11 +31,20 @@
 		<false/>
 	</dict>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>Life380 uses your location to show where you are on the family map and calculate arrival times to saved places.</string>
+	<string>Life380 uses your location to show your family where you are on the map. Your location is end-to-end encrypted and only visible to your family circles. You can pause sharing or reduce precision anytime in Settings.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>Life380 uses background location to notify your family when you arrive or leave places, even when the app is closed. This helps keep everyone connected and safe.</string>
+	<string>Life380 uses background location to notify your family when you arrive or leave places, even when the app is closed. Your location is end-to-end encrypted and automatically deleted after your chosen retention period. You have full control over who sees your location.</string>
 	<key>NSLocationAlwaysUsageDescription</key>
-	<string>Life380 uses background location to notify your family when you arrive or leave places, even when the app is closed.</string>
+	<string>Life380 uses background location to keep your family informed of your arrivals and departures. All location data is end-to-end encrypted and you can disable this anytime.</string>
+	<key>NSLocationTemporaryUsageDescriptionDictionary</key>
+	<dict>
+		<key>SOSEmergency</key>
+		<string>Life380 needs your precise location to share with your emergency contacts during an SOS alert.</string>
+		<key>ETACalculation</key>
+		<string>Life380 needs your location to calculate accurate arrival time estimates for your family.</string>
+	</dict>
+	<key>NSLocationDefaultAccuracyReduced</key>
+	<false/>
 	<key>NSMotionUsageDescription</key>
 	<string>Life380 uses motion data to improve location accuracy and detect when you're driving, walking, or stationary.</string>
 	<key>NSFaceIDUsageDescription</key>
