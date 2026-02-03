@@ -82,7 +82,7 @@ class SmartPollingScheduler {
     func recommendedAccuracy(
         motionState: MotionState,
         batteryLevel: Double
-    ) -> LocationAccuracyLevel {
+    ) -> AIAccuracyLevel {
 
         // Critical battery = lowest accuracy
         if batteryLevel < Config.criticalBatteryThreshold {
@@ -198,7 +198,7 @@ class SmartPollingScheduler {
 
 // MARK: - Supporting Types
 
-enum LocationAccuracyLevel {
+enum AIAccuracyLevel {
     case coarse      // ~100m - battery friendly
     case medium      // ~30m - balanced
     case high        // ~10m - precise

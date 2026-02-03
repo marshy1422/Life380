@@ -2,6 +2,7 @@ import Foundation
 import CoreLocation
 import CoreMotion
 import Combine
+import UIKit
 
 /// Central AI service that orchestrates all machine learning features for location intelligence
 /// This is the main entry point for AI-enhanced location tracking

@@ -67,6 +67,13 @@
 		/* Services Analytics */
 		B1000004000100000000013A /* InsightsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000004000200000000013A /* InsightsService.swift */; };
 		B1000004000100000000014A /* ETAService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000004000200000000014A /* ETAService.swift */; };
+		/* Core AI */
+		C1000001000100000000001A /* LocationIntelligenceService.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1000001000200000000001A /* LocationIntelligenceService.swift */; };
+		C1000001000100000000002A /* AutoPlaceLearner.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1000001000200000000002A /* AutoPlaceLearner.swift */; };
+		C1000001000100000000003A /* GPSReliabilityClassifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1000001000200000000003A /* GPSReliabilityClassifier.swift */; };
+		C1000001000100000000004A /* MotionPredictor.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1000001000200000000004A /* MotionPredictor.swift */; };
+		C1000001000100000000005A /* SmartPollingScheduler.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1000001000200000000005A /* SmartPollingScheduler.swift */; };
+		C1000001000100000000006A /* AILearningView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1000001000200000000006A /* AILearningView.swift */; };
 		/* Features Authentication Views */
 		B1000005000100000000001A /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000005000200000000001A /* LoginView.swift */; };
 		B1000005000100000000002A /* SignUpView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000005000200000000002A /* SignUpView.swift */; };
@@ -190,6 +197,13 @@
 		/* Services Analytics */
 		B1000004000200000000013A /* InsightsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InsightsService.swift; sourceTree = "<group>"; };
 		B1000004000200000000014A /* ETAService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ETAService.swift; sourceTree = "<group>"; };
+		/* Core AI */
+		C1000001000200000000001A /* LocationIntelligenceService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationIntelligenceService.swift; sourceTree = "<group>"; };
+		C1000001000200000000002A /* AutoPlaceLearner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutoPlaceLearner.swift; sourceTree = "<group>"; };
+		C1000001000200000000003A /* GPSReliabilityClassifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GPSReliabilityClassifier.swift; sourceTree = "<group>"; };
+		C1000001000200000000004A /* MotionPredictor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MotionPredictor.swift; sourceTree = "<group>"; };
+		C1000001000200000000005A /* SmartPollingScheduler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SmartPollingScheduler.swift; sourceTree = "<group>"; };
+		C1000001000200000000006A /* AILearningView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AILearningView.swift; sourceTree = "<group>"; };
 		/* Features Authentication Views */
 		B1000005000200000000001A /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
 		B1000005000200000000002A /* SignUpView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignUpView.swift; sourceTree = "<group>"; };
@@ -325,11 +339,41 @@
 		B1000010000000000000003A /* Core */ = {
 			isa = PBXGroup;
 			children = (
+				C1000010000000000000001A /* AI */,
 				B1000010000000000000011A /* Extensions */,
 				B1000010000000000000012A /* Utilities */,
 				B1000010000000000000013A /* Protocols */,
 			);
 			path = Core;
+			sourceTree = "<group>";
+		};
+		/* Core AI Group */
+		C1000010000000000000001A /* AI */ = {
+			isa = PBXGroup;
+			children = (
+				C1000001000200000000001A /* LocationIntelligenceService.swift */,
+				C1000010000000000000002A /* Learning */,
+				C1000010000000000000003A /* Prediction */,
+			);
+			path = AI;
+			sourceTree = "<group>";
+		};
+		C1000010000000000000002A /* Learning */ = {
+			isa = PBXGroup;
+			children = (
+				C1000001000200000000002A /* AutoPlaceLearner.swift */,
+			);
+			path = Learning;
+			sourceTree = "<group>";
+		};
+		C1000010000000000000003A /* Prediction */ = {
+			isa = PBXGroup;
+			children = (
+				C1000001000200000000003A /* GPSReliabilityClassifier.swift */,
+				C1000001000200000000004A /* MotionPredictor.swift */,
+				C1000001000200000000005A /* SmartPollingScheduler.swift */,
+			);
+			path = Prediction;
 			sourceTree = "<group>";
 		};
 		B1000010000000000000011A /* Extensions */ = {
@@ -663,6 +707,7 @@
 		B1000010000000000000042A /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				C1000001000200000000006A /* AILearningView.swift */,
 				B1000005000200000000020A /* SettingsView.swift */,
 				B1000005000200000000021A /* DeleteAccountView.swift */,
 				B1000005000200000000022A /* BetaFeedbackView.swift */,
@@ -919,6 +964,12 @@
 				B1000003000100000000009A /* MemberStatus.swift in Sources */,
 				B1000003000100000000010A /* InviteStatus.swift in Sources */,
 				B1000003000100000000011A /* Insights.swift in Sources */,
+				/* Core AI */
+				C1000001000100000000001A /* LocationIntelligenceService.swift in Sources */,
+				C1000001000100000000002A /* AutoPlaceLearner.swift in Sources */,
+				C1000001000100000000003A /* GPSReliabilityClassifier.swift in Sources */,
+				C1000001000100000000004A /* MotionPredictor.swift in Sources */,
+				C1000001000100000000005A /* SmartPollingScheduler.swift in Sources */,
 				/* Services */
 				B1000004000100000000001A /* AuthService.swift in Sources */,
 				B1000004000100000000002A /* BiometricAuthService.swift in Sources */,
@@ -959,6 +1010,7 @@
 				B1000005000100000000018A /* PlacesListView.swift in Sources */,
 				B1000005000100000000019A /* PlacesViewModel.swift in Sources */,
 				/* Features Settings */
+				C1000001000100000000006A /* AILearningView.swift in Sources */,
 				B1000005000100000000020A /* SettingsView.swift in Sources */,
 				B1000005000100000000021A /* DeleteAccountView.swift in Sources */,
 				B1000005000100000000022A /* BetaFeedbackView.swift in Sources */,
