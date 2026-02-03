@@ -130,6 +130,17 @@ struct SettingsView: View {
                                 .foregroundColor(.purple)
                         }
                     }
+
+                    NavigationLink {
+                        MLTrainingView()
+                    } label: {
+                        HStack {
+                            Label("ML Model Training", systemImage: "cpu")
+                            Spacer()
+                            Image(systemName: "gearshape.2")
+                                .foregroundColor(.orange)
+                        }
+                    }
                 }
 
                 // Notifications
