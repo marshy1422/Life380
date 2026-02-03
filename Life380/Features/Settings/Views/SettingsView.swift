@@ -121,17 +121,6 @@ struct SettingsView: View {
                     }
 
                     NavigationLink {
-                        AILearningView()
-                    } label: {
-                        HStack {
-                            Label("AI Learning", systemImage: "brain")
-                            Spacer()
-                            Image(systemName: "sparkles")
-                                .foregroundColor(.purple)
-                        }
-                    }
-
-                    NavigationLink {
                         MLTrainingView()
                     } label: {
                         HStack {
@@ -139,6 +128,52 @@ struct SettingsView: View {
                             Spacer()
                             Image(systemName: "gearshape.2")
                                 .foregroundColor(.orange)
+                        }
+                    }
+
+                    NavigationLink {
+                        DriveSafetyView()
+                    } label: {
+                        HStack {
+                            Label("Drive Safety Score", systemImage: "car.fill")
+                            Spacer()
+                            Image(systemName: "gauge.with.needle")
+                                .foregroundColor(.green)
+                        }
+                    }
+
+                    NavigationLink {
+                        CrashDetectionView()
+                    } label: {
+                        HStack {
+                            Label("Crash Detection", systemImage: "car.side.rear.and.collision.and.car.side.front")
+                            Spacer()
+                            Image(systemName: "shield.checkered")
+                                .foregroundColor(.red)
+                        }
+                    }
+
+                    NavigationLink {
+                        LocationHistoryMapView()
+                    } label: {
+                        HStack {
+                            Label("Location History", systemImage: "clock.arrow.circlepath")
+                            Spacer()
+                            Image(systemName: "map")
+                                .foregroundColor(.blue)
+                        }
+                    }
+                }
+
+                // Subscription
+                Section {
+                    NavigationLink {
+                        SubscriptionStatusView()
+                    } label: {
+                        HStack {
+                            Label("Subscription", systemImage: "crown.fill")
+                            Spacer()
+                            SubscriptionBadge()
                         }
                     }
                 }

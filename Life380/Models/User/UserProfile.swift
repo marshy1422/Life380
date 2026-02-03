@@ -52,6 +52,10 @@ struct UserProfile: Identifiable, Codable, Equatable {
     var isCharging: Bool?
     var deviceModel: String?
 
+    // Motion & Speed
+    var speed: Double?           // m/s - current speed
+    var motionState: String?     // stationary, walking, running, cycling, driving
+
     // Settings
     var isLocationSharing: Bool
     var notificationsEnabled: Bool?
@@ -153,6 +157,20 @@ struct UserProfile: Identifiable, Codable, Equatable {
         return accuracy < 50
     }
 
+    var isDriving: Bool {
+        motionState == "driving" || (speed ?? 0) > 5.0  // >5 m/s (~11 mph)
+    }
+
+    var speedMPH: Int? {
+        guard let speed = speed, speed > 0 else { return nil }
+        return Int(speed * 2.237)  // Convert m/s to mph
+    }
+
+    var speedKMH: Int? {
+        guard let speed = speed, speed > 0 else { return nil }
+        return Int(speed * 3.6)  // Convert m/s to km/h
+    }
+
     var floorDisplayName: String? {
         guard let floor = floor else { return nil }
         // Only show floor for reasonable values (-2 to +20)
@@ -191,6 +209,8 @@ struct UserProfile: Identifiable, Codable, Equatable {
         if let floor = floor { dict["floor"] = floor }
         if let isCharging = isCharging { dict["isCharging"] = isCharging }
         if let deviceModel = deviceModel { dict["deviceModel"] = deviceModel }
+        if let speed = speed { dict["speed"] = speed }
+        if let motionState = motionState { dict["motionState"] = motionState }
         if let notificationsEnabled = notificationsEnabled { dict["notificationsEnabled"] = notificationsEnabled }
         if let createdAt = createdAt { dict["createdAt"] = createdAt }
         if let lastActiveAt = lastActiveAt { dict["lastActiveAt"] = lastActiveAt }
@@ -217,6 +237,8 @@ struct UserProfile: Identifiable, Codable, Equatable {
         batteryLevel: Int = 100,
         isCharging: Bool? = nil,
         deviceModel: String? = nil,
+        speed: Double? = nil,
+        motionState: String? = nil,
         isLocationSharing: Bool = true,
         notificationsEnabled: Bool? = nil,
         circleIds: [String] = [],
@@ -239,6 +261,8 @@ struct UserProfile: Identifiable, Codable, Equatable {
         self.batteryLevel = batteryLevel
         self.isCharging = isCharging
         self.deviceModel = deviceModel
+        self.speed = speed
+        self.motionState = motionState
         self.isLocationSharing = isLocationSharing
         self.notificationsEnabled = notificationsEnabled
         self.circleIds = circleIds
@@ -270,6 +294,8 @@ struct UserProfile: Identifiable, Codable, Equatable {
         self.batteryLevel = batteryLevel
         self.isCharging = dictionary["isCharging"] as? Bool
         self.deviceModel = dictionary["deviceModel"] as? String
+        self.speed = dictionary["speed"] as? Double
+        self.motionState = dictionary["motionState"] as? String
         self.isLocationSharing = isLocationSharing
         self.notificationsEnabled = dictionary["notificationsEnabled"] as? Bool
         self.circleIds = dictionary["circleIds"] as? [String] ?? []

@@ -68,18 +68,24 @@
 		B1000004000100000000013A /* InsightsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000004000200000000013A /* InsightsService.swift */; };
 		B1000004000100000000014A /* ETAService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000004000200000000014A /* ETAService.swift */; };
 		/* Core AI */
-		C1000001000100000000001A /* LocationIntelligenceService.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1000001000200000000001A /* LocationIntelligenceService.swift */; };
-		C1000001000100000000002A /* AutoPlaceLearner.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1000001000200000000002A /* AutoPlaceLearner.swift */; };
-		C1000001000100000000003A /* GPSReliabilityClassifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1000001000200000000003A /* GPSReliabilityClassifier.swift */; };
-		C1000001000100000000004A /* MotionPredictor.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1000001000200000000004A /* MotionPredictor.swift */; };
-		C1000001000100000000005A /* SmartPollingScheduler.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1000001000200000000005A /* SmartPollingScheduler.swift */; };
-		C1000001000100000000006A /* AILearningView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1000001000200000000006A /* AILearningView.swift */; };
 		/* Core AI ML */
-		D1000001000100000000001A /* LocationTrainingSample.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1000001000200000000001A /* LocationTrainingSample.swift */; };
-		D1000001000100000000002A /* LocationDataCollector.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1000001000200000000002A /* LocationDataCollector.swift */; };
-		D1000001000100000000003A /* LocationCorrectionModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1000001000200000000003A /* LocationCorrectionModel.swift */; };
-		D1000001000100000000004A /* LocationMLService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1000001000200000000004A /* LocationMLService.swift */; };
 		D1000001000100000000005A /* MLTrainingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1000001000200000000005A /* MLTrainingView.swift */; };
+		/* Core AI Safety */
+		E1000001000100000000001A /* DriveEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1000001000200000000001A /* DriveEvent.swift */; };
+		E1000001000100000000002A /* DriveScore.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1000001000200000000002A /* DriveScore.swift */; };
+		E1000001000100000000003A /* DriveEventDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1000001000200000000003A /* DriveEventDetector.swift */; };
+		E1000001000100000000004A /* DriveSafetyService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1000001000200000000004A /* DriveSafetyService.swift */; };
+		E1000001000100000000005A /* DriveSafetyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1000001000200000000005A /* DriveSafetyView.swift */; };
+		E1000001000100000000006A /* CrashDetectionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1000001000200000000006A /* CrashDetectionService.swift */; };
+		E1000001000100000000007A /* CrashDetectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1000001000200000000007A /* CrashDetectionView.swift */; };
+		/* Location History */
+		F1000001000100000000001A /* LocationHistory.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1000001000200000000001A /* LocationHistory.swift */; };
+		F1000001000100000000002A /* LocationHistoryService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1000001000200000000002A /* LocationHistoryService.swift */; };
+		F1000001000100000000003A /* LocationHistoryMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1000001000200000000003A /* LocationHistoryMapView.swift */; };
+		/* Subscription */
+		G1000001000100000000001A /* SubscriptionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = G1000001000200000000001A /* SubscriptionService.swift */; };
+		G1000001000100000000002A /* PaywallView.swift in Sources */ = {isa = PBXBuildFile; fileRef = G1000001000200000000002A /* PaywallView.swift */; };
+		G1000001000100000000003A /* SubscriptionStatusView.swift in Sources */ = {isa = PBXBuildFile; fileRef = G1000001000200000000003A /* SubscriptionStatusView.swift */; };
 		/* Features Authentication Views */
 		B1000005000100000000001A /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000005000200000000001A /* LoginView.swift */; };
 		B1000005000100000000002A /* SignUpView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000005000200000000002A /* SignUpView.swift */; };
@@ -204,18 +210,24 @@
 		B1000004000200000000013A /* InsightsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InsightsService.swift; sourceTree = "<group>"; };
 		B1000004000200000000014A /* ETAService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ETAService.swift; sourceTree = "<group>"; };
 		/* Core AI */
-		C1000001000200000000001A /* LocationIntelligenceService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationIntelligenceService.swift; sourceTree = "<group>"; };
-		C1000001000200000000002A /* AutoPlaceLearner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutoPlaceLearner.swift; sourceTree = "<group>"; };
-		C1000001000200000000003A /* GPSReliabilityClassifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GPSReliabilityClassifier.swift; sourceTree = "<group>"; };
-		C1000001000200000000004A /* MotionPredictor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MotionPredictor.swift; sourceTree = "<group>"; };
-		C1000001000200000000005A /* SmartPollingScheduler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SmartPollingScheduler.swift; sourceTree = "<group>"; };
-		C1000001000200000000006A /* AILearningView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AILearningView.swift; sourceTree = "<group>"; };
 		/* Core AI ML */
-		D1000001000200000000001A /* LocationTrainingSample.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationTrainingSample.swift; sourceTree = "<group>"; };
-		D1000001000200000000002A /* LocationDataCollector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationDataCollector.swift; sourceTree = "<group>"; };
-		D1000001000200000000003A /* LocationCorrectionModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationCorrectionModel.swift; sourceTree = "<group>"; };
-		D1000001000200000000004A /* LocationMLService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationMLService.swift; sourceTree = "<group>"; };
 		D1000001000200000000005A /* MLTrainingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MLTrainingView.swift; sourceTree = "<group>"; };
+		/* Core AI Safety */
+		E1000001000200000000001A /* DriveEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DriveEvent.swift; sourceTree = "<group>"; };
+		E1000001000200000000002A /* DriveScore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DriveScore.swift; sourceTree = "<group>"; };
+		E1000001000200000000003A /* DriveEventDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DriveEventDetector.swift; sourceTree = "<group>"; };
+		E1000001000200000000004A /* DriveSafetyService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DriveSafetyService.swift; sourceTree = "<group>"; };
+		E1000001000200000000005A /* DriveSafetyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DriveSafetyView.swift; sourceTree = "<group>"; };
+		E1000001000200000000006A /* CrashDetectionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrashDetectionService.swift; sourceTree = "<group>"; };
+		E1000001000200000000007A /* CrashDetectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrashDetectionView.swift; sourceTree = "<group>"; };
+		/* Location History */
+		F1000001000200000000001A /* LocationHistory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationHistory.swift; sourceTree = "<group>"; };
+		F1000001000200000000002A /* LocationHistoryService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationHistoryService.swift; sourceTree = "<group>"; };
+		F1000001000200000000003A /* LocationHistoryMapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationHistoryMapView.swift; sourceTree = "<group>"; };
+		/* Subscription */
+		G1000001000200000000001A /* SubscriptionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriptionService.swift; sourceTree = "<group>"; };
+		G1000001000200000000002A /* PaywallView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallView.swift; sourceTree = "<group>"; };
+		G1000001000200000000003A /* SubscriptionStatusView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriptionStatusView.swift; sourceTree = "<group>"; };
 		/* Features Authentication Views */
 		B1000005000200000000001A /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
 		B1000005000200000000002A /* SignUpView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignUpView.swift; sourceTree = "<group>"; };
@@ -363,10 +375,10 @@
 		C1000010000000000000001A /* AI */ = {
 			isa = PBXGroup;
 			children = (
-				C1000001000200000000001A /* LocationIntelligenceService.swift */,
 				C1000010000000000000002A /* Learning */,
 				D1000010000000000000001A /* ML */,
 				C1000010000000000000003A /* Prediction */,
+				E1000010000000000000001A /* Safety */,
 			);
 			path = AI;
 			sourceTree = "<group>";
@@ -375,7 +387,6 @@
 		D1000010000000000000001A /* ML */ = {
 			isa = PBXGroup;
 			children = (
-				D1000001000200000000004A /* LocationMLService.swift */,
 				D1000010000000000000002A /* Data */,
 				D1000010000000000000003A /* Models */,
 			);
@@ -385,8 +396,6 @@
 		D1000010000000000000002A /* Data */ = {
 			isa = PBXGroup;
 			children = (
-				D1000001000200000000001A /* LocationTrainingSample.swift */,
-				D1000001000200000000002A /* LocationDataCollector.swift */,
 			);
 			path = Data;
 			sourceTree = "<group>";
@@ -394,7 +403,6 @@
 		D1000010000000000000003A /* Models */ = {
 			isa = PBXGroup;
 			children = (
-				D1000001000200000000003A /* LocationCorrectionModel.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -402,7 +410,6 @@
 		C1000010000000000000002A /* Learning */ = {
 			isa = PBXGroup;
 			children = (
-				C1000001000200000000002A /* AutoPlaceLearner.swift */,
 			);
 			path = Learning;
 			sourceTree = "<group>";
@@ -410,11 +417,19 @@
 		C1000010000000000000003A /* Prediction */ = {
 			isa = PBXGroup;
 			children = (
-				C1000001000200000000003A /* GPSReliabilityClassifier.swift */,
-				C1000001000200000000004A /* MotionPredictor.swift */,
-				C1000001000200000000005A /* SmartPollingScheduler.swift */,
 			);
 			path = Prediction;
+			sourceTree = "<group>";
+		};
+		/* Core AI Safety Group */
+		E1000010000000000000001A /* Safety */ = {
+			isa = PBXGroup;
+			children = (
+				E1000001000200000000003A /* DriveEventDetector.swift */,
+				E1000001000200000000004A /* DriveSafetyService.swift */,
+				E1000001000200000000006A /* CrashDetectionService.swift */,
+			);
+			path = Safety;
 			sourceTree = "<group>";
 		};
 		B1000010000000000000011A /* Extensions */ = {
@@ -459,6 +474,7 @@
 				B1000010000000000000016A /* Location */,
 				B1000010000000000000017A /* Enums */,
 				B1000010000000000000018A /* Insights */,
+				E1000010000000000000002A /* Safety */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -487,6 +503,7 @@
 			children = (
 				B1000003000200000000006A /* Place.swift */,
 				B1000003000200000000007A /* UserLocation.swift */,
+				F1000001000200000000001A /* LocationHistory.swift */,
 			);
 			path = Location;
 			sourceTree = "<group>";
@@ -509,6 +526,16 @@
 			path = Insights;
 			sourceTree = "<group>";
 		};
+		/* Models Safety Group */
+		E1000010000000000000002A /* Safety */ = {
+			isa = PBXGroup;
+			children = (
+				E1000001000200000000001A /* DriveEvent.swift */,
+				E1000001000200000000002A /* DriveScore.swift */,
+			);
+			path = Safety;
+			sourceTree = "<group>";
+		};
 		/* Services Group */
 		B1000010000000000000005A /* Services */ = {
 			isa = PBXGroup;
@@ -519,6 +546,7 @@
 				B1000010000000000000022A /* Circle */,
 				B1000010000000000000023A /* Safety */,
 				B1000010000000000000024A /* Analytics */,
+				G1000010000000000000001A /* Subscription */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -538,6 +566,7 @@
 				B1000004000200000000003A /* LocationManager.swift */,
 				B1000004000200000000004A /* PrecisionLocationManager.swift */,
 				B1000004000200000000005A /* GeocodingService.swift */,
+				F1000001000200000000002A /* LocationHistoryService.swift */,
 			);
 			path = Location;
 			sourceTree = "<group>";
@@ -579,6 +608,15 @@
 			path = Analytics;
 			sourceTree = "<group>";
 		};
+		/* Services Subscription Group */
+		G1000010000000000000001A /* Subscription */ = {
+			isa = PBXGroup;
+			children = (
+				G1000001000200000000001A /* SubscriptionService.swift */,
+			);
+			path = Subscription;
+			sourceTree = "<group>";
+		};
 		/* Features Group */
 		B1000010000000000000006A /* Features */ = {
 			isa = PBXGroup;
@@ -589,6 +627,8 @@
 				B1000010000000000000028A /* Invites */,
 				B1000010000000000000029A /* Places */,
 				B1000010000000000000030A /* Settings */,
+				F1000010000000000000001A /* History */,
+				G1000010000000000000002A /* Subscription */,
 			);
 			path = Features;
 			sourceTree = "<group>";
@@ -745,11 +785,47 @@
 			path = Settings;
 			sourceTree = "<group>";
 		};
+		/* Features History Group */
+		F1000010000000000000001A /* History */ = {
+			isa = PBXGroup;
+			children = (
+				F1000010000000000000002A /* Views */,
+			);
+			path = History;
+			sourceTree = "<group>";
+		};
+		F1000010000000000000002A /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				F1000001000200000000003A /* LocationHistoryMapView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		/* Features Subscription Group */
+		G1000010000000000000002A /* Subscription */ = {
+			isa = PBXGroup;
+			children = (
+				G1000010000000000000003A /* Views */,
+			);
+			path = Subscription;
+			sourceTree = "<group>";
+		};
+		G1000010000000000000003A /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				G1000001000200000000002A /* PaywallView.swift */,
+				G1000001000200000000003A /* SubscriptionStatusView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
 		B1000010000000000000042A /* Views */ = {
 			isa = PBXGroup;
 			children = (
-				C1000001000200000000006A /* AILearningView.swift */,
 				D1000001000200000000005A /* MLTrainingView.swift */,
+				E1000001000200000000005A /* DriveSafetyView.swift */,
+				E1000001000200000000007A /* CrashDetectionView.swift */,
 				B1000005000200000000020A /* SettingsView.swift */,
 				B1000005000200000000021A /* DeleteAccountView.swift */,
 				B1000005000200000000022A /* BetaFeedbackView.swift */,
@@ -1007,16 +1083,23 @@
 				B1000003000100000000010A /* InviteStatus.swift in Sources */,
 				B1000003000100000000011A /* Insights.swift in Sources */,
 				/* Core AI */
-				C1000001000100000000001A /* LocationIntelligenceService.swift in Sources */,
-				C1000001000100000000002A /* AutoPlaceLearner.swift in Sources */,
-				C1000001000100000000003A /* GPSReliabilityClassifier.swift in Sources */,
-				C1000001000100000000004A /* MotionPredictor.swift in Sources */,
-				C1000001000100000000005A /* SmartPollingScheduler.swift in Sources */,
 				/* Core AI ML */
-				D1000001000100000000001A /* LocationTrainingSample.swift in Sources */,
-				D1000001000100000000002A /* LocationDataCollector.swift in Sources */,
-				D1000001000100000000003A /* LocationCorrectionModel.swift in Sources */,
-				D1000001000100000000004A /* LocationMLService.swift in Sources */,
+				/* Core AI Safety */
+				E1000001000100000000001A /* DriveEvent.swift in Sources */,
+				E1000001000100000000002A /* DriveScore.swift in Sources */,
+				E1000001000100000000003A /* DriveEventDetector.swift in Sources */,
+				E1000001000100000000004A /* DriveSafetyService.swift in Sources */,
+				E1000001000100000000005A /* DriveSafetyView.swift in Sources */,
+				E1000001000100000000006A /* CrashDetectionService.swift in Sources */,
+				E1000001000100000000007A /* CrashDetectionView.swift in Sources */,
+				/* Location History */
+				F1000001000100000000001A /* LocationHistory.swift in Sources */,
+				F1000001000100000000002A /* LocationHistoryService.swift in Sources */,
+				F1000001000100000000003A /* LocationHistoryMapView.swift in Sources */,
+				/* Subscription */
+				G1000001000100000000001A /* SubscriptionService.swift in Sources */,
+				G1000001000100000000002A /* PaywallView.swift in Sources */,
+				G1000001000100000000003A /* SubscriptionStatusView.swift in Sources */,
 				/* Services */
 				B1000004000100000000001A /* AuthService.swift in Sources */,
 				B1000004000100000000002A /* BiometricAuthService.swift in Sources */,
@@ -1057,7 +1140,6 @@
 				B1000005000100000000018A /* PlacesListView.swift in Sources */,
 				B1000005000100000000019A /* PlacesViewModel.swift in Sources */,
 				/* Features Settings */
-				C1000001000100000000006A /* AILearningView.swift in Sources */,
 				D1000001000100000000005A /* MLTrainingView.swift in Sources */,
 				B1000005000100000000020A /* SettingsView.swift in Sources */,
 				B1000005000100000000021A /* DeleteAccountView.swift in Sources */,

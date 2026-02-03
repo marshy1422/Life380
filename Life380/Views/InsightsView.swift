@@ -387,11 +387,16 @@ struct InsightsView: View {
         for i in 0..<index {
             start += CGFloat(slices[i].duration / total)
         }
-        return start
+        return min(start, 1.0)  // Clamp to valid range
     }
 
     private func trimEnd(for index: Int, in slices: [DwellTimeSlice]) -> CGFloat {
-        trimStart(for: index, in: slices) + CGFloat(slices[index].percentage / 100)
+        let total = slices.reduce(0) { $0 + $1.duration }
+        guard total > 0, index < slices.count else { return 0 }
+
+        let start = trimStart(for: index, in: slices)
+        let end = start + CGFloat(slices[index].duration / total)
+        return min(max(end, start), 1.0)  // Ensure end >= start and <= 1.0
     }
 
     private func calculateTravelStats() -> (avgDuration: TimeInterval, totalDistance: Double, tripCount: Int) {

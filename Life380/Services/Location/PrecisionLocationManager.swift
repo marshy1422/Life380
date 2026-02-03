@@ -313,21 +313,69 @@ class LocationSmoother {
     private var lastAcceptedLocation: PrecisionLocation?
     private let maxJumpDistance: Double = 500 // meters - reject jumps larger than this
 
+    // Current motion state for adaptive filtering
+    private var currentMotionState: MotionState = .unknown
+
     // Source weighting - different sources have different reliability
+    // Lower multiplier = MORE trust (accuracy reported is accurate)
+    // Higher multiplier = LESS trust (accuracy is optimistic, inflate it)
     private let sourceAccuracyMultiplier: [LocationSource: Double] = [
         .gnss: 1.0,      // Trust GPS accuracy as-is
-        .fused: 1.2,     // Slightly less trust
+        .fused: 0.85,    // Apple's fused is often BETTER than reported (uses WiFi DB, beacons, ML)
         .wifi: 1.5,      // WiFi can have optimistic accuracy
         .cellular: 2.0,  // Cell is usually less accurate than reported
         .cached: 3.0,    // Cached locations are least reliable
         .unknown: 1.5
     ]
 
+    // Adaptive process noise based on motion state
+    // Lower noise = smoother output, trusts prediction more
+    // Higher noise = more responsive, trusts measurements more
+    private func processNoiseForMotion(_ state: MotionState) -> (position: Double, velocity: Double) {
+        switch state {
+        case .stationary:
+            // Very low noise - person isn't moving, trust our position estimate
+            return (0.000001, 0.00001)
+        case .walking:
+            // Low noise - walking is predictable
+            return (0.00001, 0.0001)
+        case .running:
+            // Medium noise - running can have more variation
+            return (0.00005, 0.0005)
+        case .cycling:
+            // Medium noise - cycling is fairly predictable
+            return (0.00003, 0.0003)
+        case .driving:
+            // Higher noise - driving has more speed variation, need responsiveness
+            return (0.0001, 0.001)
+        case .unknown:
+            // Default moderate noise
+            return (0.00003, 0.0003)
+        }
+    }
+
     init() {
         latFilter = ExtendedKalmanFilter(processNoisePosition: 0.00001, processNoiseVelocity: 0.0001)
         lonFilter = ExtendedKalmanFilter(processNoisePosition: 0.00001, processNoiseVelocity: 0.0001)
         altFilter = KalmanFilter(processNoise: 0.5)
         courseFilter = KalmanFilter(processNoise: 5.0)
+    }
+
+    /// Update the motion state for adaptive filtering
+    func updateMotionState(_ state: MotionState) {
+        guard state != currentMotionState else { return }
+        currentMotionState = state
+
+        // Adjust Kalman filter process noise based on motion
+        let noise = processNoiseForMotion(state)
+        latFilter = ExtendedKalmanFilter(processNoisePosition: noise.position, processNoiseVelocity: noise.velocity)
+        lonFilter = ExtendedKalmanFilter(processNoisePosition: noise.position, processNoiseVelocity: noise.velocity)
+
+        // Reset filters on major state change to avoid lag
+        if let lastLoc = lastAcceptedLocation {
+            latFilter.reset(to: lastLoc.latitude)
+            lonFilter.reset(to: lastLoc.longitude)
+        }
     }
 
     func smooth(_ location: PrecisionLocation) -> PrecisionLocation {
@@ -397,8 +445,22 @@ class LocationSmoother {
             smoothedCourse = currentCourse
         }
 
-        // Calculate improved accuracy estimate based on filter convergence
-        let improvedAccuracy = min(location.horizontalAccuracy, adjustedAccuracy * 0.8)
+        // Calculate improved accuracy estimate based on filter convergence and motion state
+        // Stationary gets bigger improvement (more averaging), moving gets less
+        let motionAccuracyFactor: Double
+        switch currentMotionState {
+        case .stationary:
+            motionAccuracyFactor = 0.6  // 40% improvement when stationary (lots of averaging)
+        case .walking:
+            motionAccuracyFactor = 0.75 // 25% improvement
+        case .running, .cycling:
+            motionAccuracyFactor = 0.85 // 15% improvement
+        case .driving:
+            motionAccuracyFactor = 0.9  // 10% improvement (need responsiveness)
+        case .unknown:
+            motionAccuracyFactor = 0.8  // 20% improvement default
+        }
+        let improvedAccuracy = min(location.horizontalAccuracy, adjustedAccuracy * motionAccuracyFactor)
 
         let smoothedLocation = PrecisionLocation(
             id: location.id,
@@ -547,12 +609,13 @@ class SensorFusion {
     }
 
     private func sourceTrustFactor(_ source: LocationSource) -> Double {
+        // Higher = more trust (used as weight in fusion)
         switch source {
-        case .gnss: return 1.0
-        case .fused: return 0.95
-        case .wifi: return 0.7
-        case .cellular: return 0.4
-        case .cached: return 0.2
+        case .gnss: return 1.0      // Raw GPS is baseline
+        case .fused: return 1.15    // Apple's fused often better - uses WiFi DB, beacons, crowd-sourced data
+        case .wifi: return 0.7      // WiFi alone is decent
+        case .cellular: return 0.4  // Cell towers are rough
+        case .cached: return 0.2    // Stale data
         case .unknown: return 0.5
         }
     }
@@ -740,6 +803,7 @@ class PrecisionLocationManager: NSObject, ObservableObject {
         if newState != motionState {
             DispatchQueue.main.async {
                 self.motionState = newState
+                self.smoother.updateMotionState(newState)  // Adaptive Kalman filtering
                 self.adaptToMotionState()
             }
         }
@@ -1307,16 +1371,35 @@ class PrecisionLocationManager: NSObject, ObservableObject {
 
     private func determineLocationSource(_ location: CLLocation) -> LocationSource {
         // Heuristics to determine location source
-        // Apple doesn't expose this directly, so we infer
+        // Apple doesn't expose this directly, so we infer from accuracy patterns
 
-        if location.horizontalAccuracy <= 5 {
-            return .gnss  // Very accurate = likely GPS with good signal
-        } else if location.horizontalAccuracy <= 20 {
-            return .fused  // Good accuracy = probably fused
-        } else if location.horizontalAccuracy <= 65 {
-            return .wifi  // Wi-Fi typically gives ~65m accuracy
+        let accuracy = location.horizontalAccuracy
+
+        // Apple's fused location typically has these characteristics:
+        // - Accuracy in 5-30m range (better than raw GPS indoors, similar outdoors)
+        // - Consistent readings without GPS jitter
+        // - Available even when GPS alone would struggle
+
+        if accuracy <= 5 {
+            // Very high accuracy - could be fused with strong signals or pure GPS
+            // Treat as fused since Apple likely enhanced it
+            return .fused
+        } else if accuracy <= 15 {
+            // Excellent accuracy - definitely Apple's fused location working well
+            // This is the sweet spot where Apple's fusion shines
+            return .fused
+        } else if accuracy <= 35 {
+            // Good accuracy - likely fused with some uncertainty
+            return .fused
+        } else if accuracy <= 65 {
+            // Moderate accuracy - WiFi-assisted positioning
+            return .wifi
+        } else if accuracy <= 500 {
+            // Poor accuracy - cell tower triangulation
+            return .cellular
         } else {
-            return .cellular  // Poor accuracy = likely cell tower
+            // Very poor - likely cached or degraded
+            return .cached
         }
     }
 
