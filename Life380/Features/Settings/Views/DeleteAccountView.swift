@@ -1,9 +1,11 @@
 import SwiftUI
 import FirebaseAuth
+import StoreKit
 
 struct DeleteAccountView: View {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject var authService: AuthenticationService
+    @StateObject private var subscriptionService = SubscriptionService.shared
 
     @State private var email = ""
     @State private var password = ""
@@ -13,6 +15,10 @@ struct DeleteAccountView: View {
     @State private var errorMessage: String?
 
     private let confirmationPhrase = "DELETE"
+
+    private var hasActiveSubscription: Bool {
+        subscriptionService.currentTier != .free && !subscriptionService.isLifetime
+    }
 
     var canDelete: Bool {
         confirmText == confirmationPhrase && !email.isEmpty && !password.isEmpty
@@ -60,6 +66,45 @@ struct DeleteAccountView: View {
                     retainItem("Data required by law to be retained")
                 }
                 .padding(.vertical, 8)
+            }
+
+            // Subscription cancellation warning (App Store Guideline 5.1.1(v))
+            if hasActiveSubscription {
+                Section {
+                    VStack(alignment: .leading, spacing: 12) {
+                        HStack {
+                            Image(systemName: "exclamationmark.triangle.fill")
+                                .foregroundColor(.orange)
+                                .font(.title2)
+                            Text("Active Subscription")
+                                .font(.headline)
+                        }
+
+                        Text("Deleting your account does NOT automatically cancel your subscription. You will continue to be charged unless you cancel separately.")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+
+                        if let expiration = subscriptionService.expirationDate {
+                            Text("Your \(subscriptionService.currentTier.displayName) subscription renews on \(expiration.formatted(date: .abbreviated, time: .omitted)).")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+
+                        Button(action: openSubscriptionManagement) {
+                            HStack {
+                                Image(systemName: "gear")
+                                Text("Manage Subscription in Settings")
+                            }
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .tint(.orange)
+                    }
+                    .padding(.vertical, 8)
+                } header: {
+                    Text("Important: Subscription Notice")
+                } footer: {
+                    Text("To cancel your subscription, tap the button above or go to Settings → Apple ID → Subscriptions on your device.")
+                }
             }
 
             Section("Re-authenticate to Continue") {
@@ -136,6 +181,12 @@ struct DeleteAccountView: View {
                 .foregroundColor(.blue)
             Text(text)
                 .font(.subheadline)
+        }
+    }
+
+    private func openSubscriptionManagement() {
+        if let url = URL(string: "https://apps.apple.com/account/subscriptions") {
+            UIApplication.shared.open(url)
         }
     }
 

@@ -243,7 +243,10 @@ class CircleService: ObservableObject {
 
     private func generateInviteCode() -> String {
         let characters = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789" // Excludes confusing characters
-        return String((0..<6).map { _ in characters.randomElement()! })
+        guard !characters.isEmpty else {
+            return "000000" // Fallback code - should never happen
+        }
+        return String((0..<6).compactMap { _ in characters.randomElement() })
     }
 
     func stopListening() {

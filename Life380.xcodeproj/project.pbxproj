@@ -1310,7 +1310,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Life380/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Life380;
-				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = YES;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.social-networking";
 				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "Life380 uses background location to notify your family when you arrive or leave places, even when the app is closed. This helps keep everyone connected and safe.";
 				INFOPLIST_KEY_NSLocationAlwaysUsageDescription = "Life380 uses background location to notify your family when you arrive or leave places, even when the app is closed.";
@@ -1348,7 +1348,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Life380/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Life380;
-				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = YES;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.social-networking";
 				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "Life380 uses background location to notify your family when you arrive or leave places, even when the app is closed. This helps keep everyone connected and safe.";
 				INFOPLIST_KEY_NSLocationAlwaysUsageDescription = "Life380 uses background location to notify your family when you arrive or leave places, even when the app is closed.";

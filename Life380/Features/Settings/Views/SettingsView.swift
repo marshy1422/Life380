@@ -1,4 +1,5 @@
 import SwiftUI
+import FirebaseAuth
 
 struct SettingsView: View {
     @EnvironmentObject var authService: AuthenticationService
@@ -468,29 +469,44 @@ struct PrivacySettingsView: View {
 }
 
 struct DataExportView: View {
+    @EnvironmentObject var firestoreService: FirestoreService
     @State private var isExporting = false
     @State private var exportComplete = false
+    @State private var exportError: String?
+    @State private var exportedFileURL: URL?
+    @State private var showShareSheet = false
 
     var body: some View {
         List {
             Section {
-                Text("You can request a copy of all your personal data stored in Life380.")
+                Text("You can request a copy of all your personal data stored in Life380. This includes your profile, location history, places, and circle memberships.")
                     .font(.subheadline)
                     .foregroundColor(.secondary)
             }
 
+            Section("Data Included in Export") {
+                DataExportItem(icon: "person.fill", title: "Profile Information", description: "Name, email, account settings")
+                DataExportItem(icon: "location.fill", title: "Location History", description: "Recent locations (based on retention setting)")
+                DataExportItem(icon: "mappin.circle.fill", title: "Places", description: "Saved places and geofences")
+                DataExportItem(icon: "person.3.fill", title: "Circle Memberships", description: "Circles you belong to")
+                DataExportItem(icon: "hand.raised.fill", title: "Consent Records", description: "Privacy consent history")
+            }
+
             Section {
-                Button(action: exportData) {
+                Button(action: { Task { await exportData() } }) {
                     if isExporting {
                         HStack {
                             Spacer()
                             ProgressView()
+                            Text("Exporting...")
+                                .foregroundColor(.secondary)
                             Spacer()
                         }
                     } else {
                         HStack {
                             Spacer()
-                            Text("Request Data Export")
+                            Image(systemName: "square.and.arrow.up")
+                            Text("Export My Data")
                             Spacer()
                         }
                     }
@@ -498,25 +514,183 @@ struct DataExportView: View {
                 .disabled(isExporting)
             }
 
+            if let error = exportError {
+                Section {
+                    HStack {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .foregroundColor(.red)
+                        Text(error)
+                            .foregroundColor(.red)
+                    }
+                }
+            }
+
             if exportComplete {
                 Section {
                     HStack {
                         Image(systemName: "checkmark.circle.fill")
                             .foregroundColor(.green)
-                        Text("Export requested! You'll receive an email with your data.")
+                        Text("Export complete! Your data has been saved.")
+                    }
+
+                    if exportedFileURL != nil {
+                        Button(action: { showShareSheet = true }) {
+                            HStack {
+                                Image(systemName: "square.and.arrow.up")
+                                Text("Share Export File")
+                            }
+                        }
                     }
                 }
             }
         }
         .navigationTitle("Export Data")
+        .sheet(isPresented: $showShareSheet) {
+            if let url = exportedFileURL {
+                ShareSheet(items: [url])
+            }
+        }
     }
 
-    private func exportData() {
+    private func exportData() async {
         isExporting = true
-        // Simulate export request
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-            isExporting = false
+        exportError = nil
+        exportComplete = false
+
+        do {
+            let exportData = try await GDPRDataExporter.shared.exportAllUserData()
+            let fileURL = try saveExportToFile(exportData)
+            exportedFileURL = fileURL
             exportComplete = true
+        } catch {
+            exportError = "Failed to export data: \(error.localizedDescription)"
+        }
+
+        isExporting = false
+    }
+
+    private func saveExportToFile(_ data: Data) throws -> URL {
+        let fileName = "Life380_Data_Export_\(Date().ISO8601Format()).json"
+        let tempDir = FileManager.default.temporaryDirectory
+        let fileURL = tempDir.appendingPathComponent(fileName)
+        try data.write(to: fileURL)
+        return fileURL
+    }
+}
+
+struct DataExportItem: View {
+    let icon: String
+    let title: String
+    let description: String
+
+    var body: some View {
+        HStack(spacing: 12) {
+            Image(systemName: icon)
+                .foregroundColor(.blue)
+                .frame(width: 24)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .font(.subheadline)
+                Text(description)
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+        }
+    }
+}
+
+struct ShareSheet: UIViewControllerRepresentable {
+    let items: [Any]
+
+    func makeUIViewController(context: Context) -> UIActivityViewController {
+        UIActivityViewController(activityItems: items, applicationActivities: nil)
+    }
+
+    func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
+}
+
+/// GDPR-compliant data exporter
+class GDPRDataExporter {
+    static let shared = GDPRDataExporter()
+
+    private init() {}
+
+    func exportAllUserData() async throws -> Data {
+        guard let userId = FirebaseAuth.Auth.auth().currentUser?.uid else {
+            throw ExportError.notAuthenticated
+        }
+
+        var exportDict: [String: Any] = [
+            "exportDate": ISO8601DateFormatter().string(from: Date()),
+            "userId": userId,
+            "appVersion": Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "unknown"
+        ]
+
+        // Export user profile
+        if let profile = try? await FirestoreService.shared.fetchUserProfile(userId: userId) {
+            exportDict["profile"] = [
+                "displayName": profile.displayName,
+                "email": profile.email,
+                "phoneNumber": profile.phoneNumber ?? "",
+                "createdAt": profile.createdAt?.ISO8601Format() ?? "",
+                "lastUpdated": profile.lastUpdated?.ISO8601Format() ?? ""
+            ]
+        }
+
+        // Export circles
+        let circles = try? await FirestoreService.shared.fetchUserCircles(userId: userId)
+        exportDict["circles"] = circles?.map { circle in
+            [
+                "id": circle.id,
+                "name": circle.name,
+                "role": circle.members.first { $0.id == userId }?.role ?? "member",
+                "joinedAt": circle.createdAt.ISO8601Format()
+            ]
+        } ?? []
+
+        // Export places
+        let places = try? await FirestoreService.shared.fetchPlaces(userId: userId)
+        exportDict["places"] = places?.map { place in
+            [
+                "id": place.id,
+                "name": place.name,
+                "address": place.address ?? "",
+                "latitude": place.coordinate.latitude,
+                "longitude": place.coordinate.longitude,
+                "radius": place.radius
+            ]
+        } ?? []
+
+        // Export consent history (from ConsentManager)
+        let consentHistory = ConsentManager.shared.exportConsentHistory()
+        exportDict["consentHistory"] = consentHistory
+
+        // Export access logs (from PrivacySecurityService)
+        let accessLogs = PrivacySecurityService.shared.exportAccessLogs()
+        exportDict["locationAccessLogs"] = accessLogs
+
+        // Export privacy settings
+        exportDict["privacySettings"] = [
+            "locationSharingEnabled": UserDefaults.standard.bool(forKey: "isLocationSharingEnabled"),
+            "dataRetentionDays": UserDefaults.standard.integer(forKey: "dataRetentionDays"),
+            "analyticsEnabled": UserDefaults.standard.bool(forKey: "analyticsEnabled")
+        ]
+
+        let jsonData = try JSONSerialization.data(withJSONObject: exportDict, options: [.prettyPrinted, .sortedKeys])
+        return jsonData
+    }
+
+    enum ExportError: LocalizedError {
+        case notAuthenticated
+        case exportFailed
+
+        var errorDescription: String? {
+            switch self {
+            case .notAuthenticated:
+                return "You must be signed in to export your data."
+            case .exportFailed:
+                return "Failed to export data. Please try again."
+            }
         }
     }
 }

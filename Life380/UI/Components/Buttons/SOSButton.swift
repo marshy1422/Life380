@@ -134,8 +134,18 @@ struct SOSButton: View {
             )
             .disabled(sosService.isSending)
         }
+        .frame(width: 80, height: 80) // Minimum 44pt touch target, increased for emergency use
+        .contentShape(Circle()) // Extend hit area to full frame
         .scaleEffect(isHolding ? 1.1 : 1.0)
         .animation(.spring(response: 0.3), value: isHolding)
+        // MARK: - Accessibility
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("Emergency SOS")
+        .accessibilityHint(isHolding
+            ? "Release to cancel. SOS will send in \(Int((1.0 - holdProgress) * 3)) seconds."
+            : "Press and hold for 3 seconds to send emergency alert to your family circle. Your location will be shared.")
+        .accessibilityAddTraits(.isButton)
+        .accessibilityValue(sosService.isSending ? "Sending alert" : (isHolding ? "Holding, \(Int(holdProgress * 100)) percent" : "Ready"))
     }
 
     // MARK: - Hold Logic

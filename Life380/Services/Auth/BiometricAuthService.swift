@@ -17,7 +17,22 @@ class BiometricAuthService: ObservableObject {
     @AppStorage("requireBiometricOnLaunch") var requireOnLaunch: Bool = false
     @AppStorage("requireBiometricForLocationToggle") var requireForLocationToggle: Bool = true
     @AppStorage("requireBiometricForSOS") var requireForSOS: Bool = false
-    @AppStorage("lastAuthTime") private var lastAuthTimeInterval: Double = 0
+
+    // Security: Store lastAuthTime in Keychain instead of UserDefaults
+    private static let lastAuthTimeKeychainKey = "com.life380.biometric.lastAuthTime"
+
+    private var lastAuthTimeInterval: Double {
+        get {
+            guard let timeString = try? KeychainManager.getString(forKey: Self.lastAuthTimeKeychainKey),
+                  let time = Double(timeString) else {
+                return 0
+            }
+            return time
+        }
+        set {
+            try? KeychainManager.save(String(newValue), forKey: Self.lastAuthTimeKeychainKey)
+        }
+    }
 
     // Configuration
     private let authValidityDuration: TimeInterval = 300 // 5 minutes

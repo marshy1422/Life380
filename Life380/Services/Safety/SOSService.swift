@@ -485,9 +485,12 @@ extension NotificationService {
     /// Received SOS from another circle member
     func notifySOSReceived(fromName: String, latitude: Double, longitude: Double) {
         let content = UNMutableNotificationContent()
-        content.title = "🆘 EMERGENCY: \(fromName) needs help!"
+        content.title = "EMERGENCY: \(fromName) needs help!"
         content.body = "\(fromName) has triggered an SOS alert. Tap to see their location."
-        content.sound = .defaultCritical  // Loud alert sound
+        // Note: Using .timeSensitive until Critical Alerts entitlement is approved by Apple.
+        // Once approved, change to .defaultCritical and .critical for full Do Not Disturb bypass.
+        // Apply for entitlement at: https://developer.apple.com/contact/request/notifications-critical-alerts-entitlement/
+        content.sound = .defaultRingtone
         content.categoryIdentifier = "SOS_RECEIVED"
         content.userInfo = [
             "type": "sos",
@@ -495,7 +498,7 @@ extension NotificationService {
             "longitude": longitude,
             "fromName": fromName
         ]
-        content.interruptionLevel = .critical  // Bypasses Do Not Disturb
+        content.interruptionLevel = .timeSensitive  // Breaks through Focus, but respects DND until entitlement approved
 
         let request = UNNotificationRequest(
             identifier: "sos_received_\(Date().timeIntervalSince1970)",

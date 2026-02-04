@@ -2,7 +2,10 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Helper functions
+    // ==========================================
+    // Helper Functions
+    // ==========================================
+
     function isAuthenticated() {
       return request.auth != null;
     }
@@ -17,6 +20,13 @@ service cloud.firestore {
         request.auth.uid in get(/databases/$(database)/documents/circles/$(circleId)).data.memberIds;
     }
 
+    function isCircleCreator(circleId) {
+      return isAuthenticated() &&
+        exists(/databases/$(database)/documents/circles/$(circleId)) &&
+        request.auth.uid == get(/databases/$(database)/documents/circles/$(circleId)).data.createdBy;
+    }
+
+    // Validation functions
     function isValidDisplayName(name) {
       return name is string && name.size() >= 1 && name.size() <= 100;
     }
@@ -33,7 +43,13 @@ service cloud.firestore {
       return level is number && level >= 0 && level <= 100;
     }
 
-    // Users collection
+    function isValidInviteCode(code) {
+      return code is string && code.size() == 6;
+    }
+
+    // ==========================================
+    // Users Collection
+    // ==========================================
     match /users/{userId} {
       // Users can read their own profile OR profiles of circle members
       allow read: if isOwner(userId) ||
@@ -43,44 +59,78 @@ service cloud.firestore {
            get(/databases/$(database)/documents/users/$(request.auth.uid)).data.circleIds
          ));
 
-      // Users can only create their own profile
+      // Users can only create their own profile with validated fields
       allow create: if isOwner(userId) &&
         request.resource.data.id == userId &&
-        request.resource.data.displayName is string &&
-        request.resource.data.displayName.size() >= 1;
+        isValidDisplayName(request.resource.data.displayName) &&
+        request.resource.data.email is string &&
+        request.resource.data.circleIds == [];
 
-      // Users can only update their own profile
-      allow update: if isOwner(userId);
+      // Users can update their own profile with field restrictions
+      allow update: if isOwner(userId) &&
+        // Cannot modify id or email
+        request.resource.data.id == resource.data.id &&
+        request.resource.data.email == resource.data.email &&
+        // Validate display name if changed
+        (request.resource.data.displayName == resource.data.displayName ||
+         isValidDisplayName(request.resource.data.displayName)) &&
+        // Validate location fields if present
+        (!('latitude' in request.resource.data) || isValidLatitude(request.resource.data.latitude)) &&
+        (!('longitude' in request.resource.data) || isValidLongitude(request.resource.data.longitude)) &&
+        (!('batteryLevel' in request.resource.data) || isValidBatteryLevel(request.resource.data.batteryLevel));
 
       // Users can only delete their own profile
       allow delete: if isOwner(userId);
+
+      // Location history subcollection - only owner can access
+      match /location_history/{historyId} {
+        allow read: if isOwner(userId);
+        allow create: if isOwner(userId);
+        allow delete: if isOwner(userId);
+        allow update: if false; // History should not be modified
+      }
     }
 
-    // Circles collection
+    // ==========================================
+    // Circles Collection
+    // ==========================================
     match /circles/{circleId} {
-      // Circle members can read full details
-      // Any authenticated user can read (needed for invite code lookup)
-      allow read: if isAuthenticated();
+      // SECURITY FIX: Only circle members can read full circle details
+      // For invite code lookup, use a Cloud Function instead
+      allow read: if isCircleMember(circleId);
 
-      // Any authenticated user can create a circle
+      // Any authenticated user can create a circle (they become first member)
       allow create: if isAuthenticated() &&
         request.resource.data.createdBy == request.auth.uid &&
         request.resource.data.memberIds == [request.auth.uid] &&
         request.resource.data.name is string &&
         request.resource.data.name.size() >= 1 &&
         request.resource.data.name.size() <= 50 &&
-        request.resource.data.inviteCode is string &&
-        request.resource.data.inviteCode.size() == 6;
+        isValidInviteCode(request.resource.data.inviteCode) &&
+        request.resource.data.createdAt is timestamp;
 
-      // Circle members can update, AND new members can join
+      // Circle update rules
       allow update: if isAuthenticated() && (
-        // Existing member can update
-        isCircleMember(circleId) ||
-        // New member joining: adding themselves to memberIds
-        // Only allows adding exactly one member (themselves)
+        // Existing member can update (but not change critical fields)
+        (isCircleMember(circleId) &&
+         // Cannot change creator
+         request.resource.data.createdBy == resource.data.createdBy &&
+         // Cannot change creation date
+         request.resource.data.createdAt == resource.data.createdAt &&
+         // Only creator can regenerate invite code
+         (request.resource.data.inviteCode == resource.data.inviteCode || isCircleCreator(circleId))
+        ) ||
+        // New member joining via invite code - MUST validate this server-side
+        // This rule allows joining but should be accompanied by a Cloud Function
+        // that validates the invite code
         (request.resource.data.memberIds.size() == resource.data.memberIds.size() + 1 &&
+         request.resource.data.memberIds.hasAll(resource.data.memberIds) &&
          request.resource.data.memberIds.hasAny([request.auth.uid]) &&
-         !resource.data.memberIds.hasAny([request.auth.uid]))
+         !resource.data.memberIds.hasAny([request.auth.uid]) &&
+         // Preserve all other fields
+         request.resource.data.createdBy == resource.data.createdBy &&
+         request.resource.data.inviteCode == resource.data.inviteCode &&
+         request.resource.data.name == resource.data.name)
       );
 
       // Only creator can delete (and only if they're the last member)
@@ -88,7 +138,9 @@ service cloud.firestore {
         resource.data.createdBy == request.auth.uid &&
         resource.data.memberIds.size() <= 1;
 
+      // ----------------------------------------
       // Places subcollection
+      // ----------------------------------------
       match /places/{placeId} {
         allow read: if isCircleMember(circleId);
 
@@ -97,42 +149,146 @@ service cloud.firestore {
           request.resource.data.name.size() >= 1 &&
           request.resource.data.name.size() <= 100 &&
           isValidLatitude(request.resource.data.latitude) &&
-          isValidLongitude(request.resource.data.longitude);
+          isValidLongitude(request.resource.data.longitude) &&
+          request.resource.data.createdBy == request.auth.uid;
 
-        allow update: if isCircleMember(circleId);
+        allow update: if isCircleMember(circleId) &&
+          // Cannot change who created the place
+          request.resource.data.createdBy == resource.data.createdBy;
 
         allow delete: if isCircleMember(circleId);
       }
 
+      // ----------------------------------------
+      // Encrypted Locations subcollection (NEW - CRITICAL)
+      // ----------------------------------------
+      match /encrypted_locations/{locationUserId} {
+        // Circle members can read all encrypted locations (for map display)
+        allow read: if isCircleMember(circleId);
+
+        // Users can only write their own encrypted location
+        allow create: if isCircleMember(circleId) &&
+          request.auth.uid == locationUserId &&
+          request.resource.data.timestamp is timestamp &&
+          request.resource.data.expiresAt is timestamp &&
+          request.resource.data.encryptedPayload is bytes &&
+          request.resource.data.nonce is bytes &&
+          request.resource.data.tag is bytes;
+
+        allow update: if isCircleMember(circleId) &&
+          request.auth.uid == locationUserId &&
+          request.resource.data.timestamp is timestamp &&
+          request.resource.data.expiresAt is timestamp;
+
+        // Users can delete their own location data (privacy right)
+        allow delete: if isCircleMember(circleId) && request.auth.uid == locationUserId;
+      }
+
+      // ----------------------------------------
       // SOS Alerts subcollection - CRITICAL for emergency features
+      // ----------------------------------------
       match /sosAlerts/{alertId} {
         allow read: if isCircleMember(circleId);
 
-        // Only allow creating alerts for yourself
+        // Only allow creating alerts for yourself with required fields
         allow create: if isCircleMember(circleId) &&
-          request.resource.data.userId == request.auth.uid;
+          request.resource.data.userId == request.auth.uid &&
+          request.resource.data.userName is string &&
+          isValidLatitude(request.resource.data.latitude) &&
+          isValidLongitude(request.resource.data.longitude) &&
+          request.resource.data.isActive == true &&
+          request.resource.data.timestamp is timestamp;
 
-        // Allow updates (to resolve alerts) by circle members
-        allow update: if isCircleMember(circleId);
+        // SECURITY FIX: Restrict what fields can be updated
+        allow update: if isCircleMember(circleId) && (
+          // Alert owner can update location (for streaming)
+          (request.auth.uid == resource.data.userId &&
+           // Cannot change ownership or identity
+           request.resource.data.userId == resource.data.userId &&
+           request.resource.data.userName == resource.data.userName &&
+           request.resource.data.id == resource.data.id
+          ) ||
+          // Any member can resolve (mark inactive)
+          (request.resource.data.isActive == false &&
+           resource.data.isActive == true &&
+           request.resource.data.resolvedBy == request.auth.uid &&
+           request.resource.data.resolvedAt is timestamp &&
+           // Cannot change core alert data when resolving
+           request.resource.data.userId == resource.data.userId &&
+           request.resource.data.userName == resource.data.userName)
+        );
 
         // Never allow deletion of SOS alerts (audit trail)
         allow delete: if false;
+
+        // Location history during SOS (nested subcollection)
+        match /locationHistory/{historyId} {
+          allow read: if isCircleMember(circleId);
+
+          // Only the SOS alert owner can add location history
+          allow create: if isCircleMember(circleId) &&
+            get(/databases/$(database)/documents/circles/$(circleId)/sosAlerts/$(alertId)).data.userId == request.auth.uid &&
+            isValidLatitude(request.resource.data.latitude) &&
+            isValidLongitude(request.resource.data.longitude) &&
+            request.resource.data.timestamp is timestamp;
+
+          // No updates or deletes to location history
+          allow update: if false;
+          allow delete: if false;
+        }
       }
 
+      // ----------------------------------------
       // Check-ins subcollection
+      // ----------------------------------------
       match /checkIns/{checkinId} {
         allow read: if isCircleMember(circleId);
 
         // Only allow creating check-ins for yourself
         allow create: if isCircleMember(circleId) &&
-          request.resource.data.userId == request.auth.uid;
+          request.resource.data.userId == request.auth.uid &&
+          request.resource.data.userName is string &&
+          request.resource.data.timestamp is timestamp;
 
-        // Never allow deletion of check-ins
+        // Explicitly deny updates
+        allow update: if false;
+
+        // Never allow deletion of check-ins (audit trail)
         allow delete: if false;
       }
     }
 
+    // ==========================================
+    // Subscriptions Collection (if storing server-side)
+    // ==========================================
+    match /subscriptions/{userId} {
+      // Users can only read their own subscription
+      allow read: if isOwner(userId);
+
+      // Only Cloud Functions should write subscription data
+      // (after validating with Apple/Google receipt)
+      allow create: if false;
+      allow update: if false;
+      allow delete: if false;
+    }
+
+    // ==========================================
+    // Invite Codes Collection (for secure lookup)
+    // ==========================================
+    match /inviteCodes/{code} {
+      // Allow authenticated users to read invite codes (for joining)
+      // This is safer than exposing full circle data
+      allow read: if isAuthenticated();
+
+      // Only allow creation/update through Cloud Functions
+      allow create: if false;
+      allow update: if false;
+      allow delete: if false;
+    }
+
+    // ==========================================
     // Deny all other access
+    // ==========================================
     match /{document=**} {
       allow read, write: if false;
     }

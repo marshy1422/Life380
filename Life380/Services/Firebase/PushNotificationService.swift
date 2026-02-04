@@ -366,6 +366,19 @@ class PushNotificationService: ObservableObject {
             options: []
         )
 
+        let callAction = UNNotificationAction(
+            identifier: "CALL",
+            title: "Call",
+            options: [.foreground]
+        )
+
+        let cancelSOSAction = UNNotificationAction(
+            identifier: "CANCEL_SOS",
+            title: "Cancel SOS",
+            options: [.destructive, .authenticationRequired]
+        )
+
+        // Geofence categories
         let entryCategory = UNNotificationCategory(
             identifier: "GEOFENCE_ENTRY",
             actions: [viewMapAction, dismissAction],
@@ -394,11 +407,79 @@ class PushNotificationService: ObservableObject {
             options: []
         )
 
+        // SOS categories (critical for emergency feature)
+        let sosSentCategory = UNNotificationCategory(
+            identifier: "SOS_SENT",
+            actions: [cancelSOSAction],
+            intentIdentifiers: [],
+            options: [.customDismissAction]
+        )
+
+        let sosReceivedCategory = UNNotificationCategory(
+            identifier: "SOS_RECEIVED",
+            actions: [viewMapAction, callAction],
+            intentIdentifiers: [],
+            options: [.customDismissAction]
+        )
+
+        // Member arrival/departure categories
+        let memberArrivalCategory = UNNotificationCategory(
+            identifier: "MEMBER_ARRIVAL",
+            actions: [viewMapAction, dismissAction],
+            intentIdentifiers: [],
+            options: []
+        )
+
+        let memberDepartureCategory = UNNotificationCategory(
+            identifier: "MEMBER_DEPARTURE",
+            actions: [viewMapAction, dismissAction],
+            intentIdentifiers: [],
+            options: []
+        )
+
+        // Driving/commute categories
+        let memberCommuteCategory = UNNotificationCategory(
+            identifier: "MEMBER_COMMUTE",
+            actions: [viewMapAction, dismissAction],
+            intentIdentifiers: [],
+            options: []
+        )
+
+        let speedAlertCategory = UNNotificationCategory(
+            identifier: "SPEED_ALERT",
+            actions: [viewMapAction, dismissAction],
+            intentIdentifiers: [],
+            options: []
+        )
+
+        let drivingAlertCategory = UNNotificationCategory(
+            identifier: "DRIVING_ALERT",
+            actions: [viewMapAction, dismissAction],
+            intentIdentifiers: [],
+            options: []
+        )
+
+        // Reminder category
+        let leaveReminderCategory = UNNotificationCategory(
+            identifier: "LEAVE_REMINDER",
+            actions: [dismissAction],
+            intentIdentifiers: [],
+            options: []
+        )
+
         notificationCenter.setNotificationCategories([
             entryCategory,
             exitCategory,
             memberCategory,
-            batteryCategory
+            batteryCategory,
+            sosSentCategory,
+            sosReceivedCategory,
+            memberArrivalCategory,
+            memberDepartureCategory,
+            memberCommuteCategory,
+            speedAlertCategory,
+            drivingAlertCategory,
+            leaveReminderCategory
         ])
     }
 }

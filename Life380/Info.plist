@@ -57,6 +57,13 @@
 	<array>
 		<string>location</string>
 		<string>remote-notification</string>
+		<string>fetch</string>
+		<string>processing</string>
+	</array>
+	<key>BGTaskSchedulerPermittedIdentifiers</key>
+	<array>
+		<string>com.life380.app.locationRefresh</string>
+		<string>com.life380.app.locationSync</string>
 	</array>
 	<key>UILaunchScreen</key>
 	<dict/>

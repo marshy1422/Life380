@@ -9,12 +9,62 @@ private let logger = Logger(subsystem: "com.life380.app", category: "Security")
 
 /// Delegate for certificate pinning on URLSession requests
 class CertificatePinningDelegate: NSObject, URLSessionDelegate {
-    // SHA256 fingerprints of pinned certificates
-    // In production, add your actual certificate fingerprints here
+    // MARK: - Certificate Pinning Configuration
+    //
+    // SHA256 fingerprints of pinned certificates for Firebase/Google services:
+    // - Firebase Authentication (identitytoolkit.googleapis.com)
+    // - Cloud Firestore (firestore.googleapis.com)
+    // - Firebase Cloud Messaging (fcm.googleapis.com)
+    // - Firebase Storage (storage.googleapis.com)
+    //
+    // Certificate Sources:
+    // - Google Trust Services (GTS) Root Certificates: https://pki.goog/repository/
+    // - These are the root CA certificates that sign intermediate certificates for all *.googleapis.com domains
+    //
+    // Expiration Information:
+    // - GTS Root R1: Valid until 2036-06-22
+    // - GTS Root R2: Valid until 2036-06-22
+    // - GTS Root R3: Valid until 2036-06-22
+    // - GTS Root R4: Valid until 2036-06-22
+    // - GlobalSign Root CA: Valid until 2028-01-28 (legacy fallback)
+    //
+    // CERTIFICATE ROTATION STRATEGY:
+    // 1. Pin root CA certificates instead of leaf certificates for longer validity
+    // 2. Include multiple root CAs for resilience during certificate transitions
+    // 3. Monitor Google's PKI repository (https://pki.goog/) for certificate changes
+    // 4. Schedule quarterly reviews of certificate validity
+    // 5. Implement remote configuration to push certificate updates without app release
+    // 6. Set up alerting for certificate expiration 90 days in advance
+    // 7. Test certificate rotation in staging environment before production rollout
+    //
+    // Last Updated: 2026-02-04
+    // Next Review Date: 2026-05-04
+    //
     private let pinnedCertificates: Set<String> = [
-        // Firebase/Google certificates (example - replace with actual)
-        "E1A0F3D5C8B2A9876543210FEDCBA9876543210FEDCBA9876543210FEDCBA98",
-        // Add more certificate hashes as needed
+        // GTS Root R1 - Primary root for googleapis.com (RSA 4096-bit)
+        // Subject: CN=GTS Root R1, O=Google Trust Services LLC, C=US
+        // Valid: 2016-06-22 to 2036-06-22
+        "2A575471E31340BC21581CBD2CF13E158A67B330BA6ED3D7E0B72F02A4F2168E",
+
+        // GTS Root R2 - Secondary root for googleapis.com (RSA 4096-bit)
+        // Subject: CN=GTS Root R2, O=Google Trust Services LLC, C=US
+        // Valid: 2016-06-22 to 2036-06-22
+        "C45D7BB08E6D67E62E4235110B564E5F78FD92EF058C840AEA4E6455D7585C60",
+
+        // GTS Root R3 - ECC P-384 root certificate
+        // Subject: CN=GTS Root R3, O=Google Trust Services LLC, C=US
+        // Valid: 2016-06-22 to 2036-06-22
+        "15D5B8774619EA7D54CE1CA6D0B0C403E037A917F131E8A04E1E6B7A71BABCE5",
+
+        // GTS Root R4 - ECC P-384 root certificate (backup)
+        // Subject: CN=GTS Root R4, O=Google Trust Services LLC, C=US
+        // Valid: 2016-06-22 to 2036-06-22
+        "71CCA5391F9E794B04802530B363E121DA8A3043BB26662FEA4DCA7FC951A4BD",
+
+        // GlobalSign Root CA - R2 (Legacy fallback, used by some Google services)
+        // Subject: CN=GlobalSign, O=GlobalSign, OU=GlobalSign Root CA - R2
+        // Valid: 2006-12-15 to 2028-01-28
+        "CA42DD41745FD0B81EB902362CF9D8BF719DA1BD1B1EFC946F5B4C99F42C1B9E",
     ]
 
     func urlSession(

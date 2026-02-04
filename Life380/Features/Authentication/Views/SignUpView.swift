@@ -15,12 +15,31 @@ struct SignUpView: View {
     @State private var agreedToTerms = false
     @State private var isRequestingLocation = false
 
+    // COPPA Age Verification
+    @State private var dateOfBirth = Calendar.current.date(byAdding: .year, value: -18, to: Date()) ?? Date()
+    @State private var hasParentalConsent = false
+    @State private var showingAgeBlockedAlert = false
+
+    private var userAge: Int {
+        Calendar.current.dateComponents([.year], from: dateOfBirth, to: Date()).year ?? 0
+    }
+
+    private var isUnder13: Bool {
+        userAge < 13
+    }
+
+    private var isMinor: Bool {
+        userAge < 18
+    }
+
     var passwordsMatch: Bool {
         !password.isEmpty && password == confirmPassword
     }
 
     var isFormValid: Bool {
-        !displayName.isEmpty && !email.isEmpty && password.count >= 6 && passwordsMatch && agreedToTerms
+        let baseValid = !displayName.isEmpty && !email.isEmpty && password.count >= 6 && passwordsMatch && agreedToTerms
+        let ageValid = !isUnder13 && (isMinor ? hasParentalConsent : true)
+        return baseValid && ageValid
     }
 
     var body: some View {
@@ -34,6 +53,46 @@ struct SignUpView: View {
                         .textContentType(.emailAddress)
                         .textInputAutocapitalization(.never)
                         .keyboardType(.emailAddress)
+                }
+
+                // COPPA Age Verification Section
+                Section {
+                    DatePicker(
+                        "Date of Birth",
+                        selection: $dateOfBirth,
+                        in: ...Date(),
+                        displayedComponents: .date
+                    )
+                    .onChange(of: dateOfBirth) { _, _ in
+                        if isUnder13 {
+                            showingAgeBlockedAlert = true
+                        }
+                    }
+
+                    if isUnder13 {
+                        HStack {
+                            Image(systemName: "exclamationmark.triangle.fill")
+                                .foregroundColor(.red)
+                            Text("You must be at least 13 years old to create an account.")
+                                .font(.caption)
+                                .foregroundColor(.red)
+                        }
+                    } else if isMinor {
+                        Toggle(isOn: $hasParentalConsent) {
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("I have parental or guardian consent")
+                                    .font(.subheadline)
+                                Text("Required for users under 18")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                        }
+                    }
+                } header: {
+                    Text("Age Verification")
+                } footer: {
+                    Text("Life380 complies with COPPA regulations. Users under 13 cannot create accounts. Users 13-17 require parental consent.")
+                        .font(.caption2)
                 }
 
                 Section {
@@ -151,6 +210,11 @@ struct SignUpView: View {
                 if isAuthenticated {
                     dismiss()
                 }
+            }
+            .alert("Age Requirement", isPresented: $showingAgeBlockedAlert) {
+                Button("OK", role: .cancel) { }
+            } message: {
+                Text("Life380 requires users to be at least 13 years old to create an account. This is required by the Children's Online Privacy Protection Act (COPPA).")
             }
         }
     }
