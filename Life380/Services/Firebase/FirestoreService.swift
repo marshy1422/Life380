@@ -413,4 +413,36 @@ class FirestoreService: ObservableObject {
         listenToCircleMembers(circleId: circleId)
         listenToPlaces(circleId: circleId)
     }
+
+    // MARK: - GDPR Data Export
+
+    func fetchUserProfile(userId: String) async throws -> UserProfile? {
+        let doc = try await db.collection("users").document(userId).getDocument()
+        guard let data = doc.data() else { return nil }
+        return UserProfile(dictionary: data)
+    }
+
+    func fetchUserCircles(userId: String) async throws -> [FamilyCircle] {
+        let snapshot = try await db.collection("circles")
+            .whereField("memberIds", arrayContains: userId)
+            .getDocuments()
+        return snapshot.documents.compactMap { FamilyCircle(dictionary: $0.data()) }
+    }
+
+    func fetchPlaces(userId: String) async throws -> [Place] {
+        // Get user's circles first
+        let circles = try await fetchUserCircles(userId: userId)
+        var allPlaces: [Place] = []
+
+        for circle in circles {
+            let placesSnapshot = try await db.collection("circles")
+                .document(circle.id)
+                .collection("places")
+                .getDocuments()
+            let circlePlaces = placesSnapshot.documents.compactMap { Place(dictionary: $0.data()) }
+            allPlaces.append(contentsOf: circlePlaces)
+        }
+
+        return allPlaces
+    }
 }

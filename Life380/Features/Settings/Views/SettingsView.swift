@@ -599,6 +599,7 @@ struct DataExportItem: View {
     }
 }
 
+/// Reusable ShareSheet wrapper for UIActivityViewController
 struct ShareSheet: UIViewControllerRepresentable {
     let items: [Any]
 
@@ -633,41 +634,35 @@ class GDPRDataExporter {
                 "email": profile.email,
                 "phoneNumber": profile.phoneNumber ?? "",
                 "createdAt": profile.createdAt?.ISO8601Format() ?? "",
-                "lastUpdated": profile.lastUpdated?.ISO8601Format() ?? ""
+                "lastUpdated": profile.lastUpdated.ISO8601Format()
             ]
         }
 
         // Export circles
-        let circles = try? await FirestoreService.shared.fetchUserCircles(userId: userId)
-        exportDict["circles"] = circles?.map { circle in
-            [
-                "id": circle.id,
-                "name": circle.name,
-                "role": circle.members.first { $0.id == userId }?.role ?? "member",
-                "joinedAt": circle.createdAt.ISO8601Format()
-            ]
-        } ?? []
+        if let circles = try? await FirestoreService.shared.fetchUserCircles(userId: userId) {
+            exportDict["circles"] = circles.map { circle in
+                [
+                    "id": circle.id,
+                    "name": circle.name,
+                    "role": circle.isAdmin(userId) ? "admin" : "member",
+                    "joinedAt": circle.createdAt.ISO8601Format()
+                ] as [String: Any]
+            }
+        }
 
         // Export places
-        let places = try? await FirestoreService.shared.fetchPlaces(userId: userId)
-        exportDict["places"] = places?.map { place in
-            [
-                "id": place.id,
-                "name": place.name,
-                "address": place.address ?? "",
-                "latitude": place.coordinate.latitude,
-                "longitude": place.coordinate.longitude,
-                "radius": place.radius
-            ]
-        } ?? []
-
-        // Export consent history (from ConsentManager)
-        let consentHistory = ConsentManager.shared.exportConsentHistory()
-        exportDict["consentHistory"] = consentHistory
-
-        // Export access logs (from PrivacySecurityService)
-        let accessLogs = PrivacySecurityService.shared.exportAccessLogs()
-        exportDict["locationAccessLogs"] = accessLogs
+        if let places = try? await FirestoreService.shared.fetchPlaces(userId: userId) {
+            exportDict["places"] = places.map { place in
+                [
+                    "id": place.id,
+                    "name": place.name,
+                    "address": place.address ?? "",
+                    "latitude": place.coordinate.latitude,
+                    "longitude": place.coordinate.longitude,
+                    "radius": place.radius
+                ] as [String: Any]
+            }
+        }
 
         // Export privacy settings
         exportDict["privacySettings"] = [

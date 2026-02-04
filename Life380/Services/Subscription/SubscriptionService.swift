@@ -205,7 +205,7 @@ class SubscriptionService: ObservableObject {
             return "\(offer.displayPrice) for \(offerDuration), then \(product.displayPrice)"
         case .payUpFront:
             return "\(offer.displayPrice) for \(offerDuration) upfront"
-        @unknown default:
+        default:
             return nil
         }
     }
