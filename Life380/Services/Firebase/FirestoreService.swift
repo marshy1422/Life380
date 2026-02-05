@@ -196,6 +196,8 @@ class FirestoreService: ObservableObject {
         case invalidInviteCode
         case alreadyMember
         case networkError
+        case notAuthorized
+        case cannotLeaveOnlyCircle
 
         var errorDescription: String? {
             switch self {
@@ -207,6 +209,10 @@ class FirestoreService: ObservableObject {
                 return "You're already a member of this circle"
             case .networkError:
                 return "Network error. Please check your connection and try again."
+            case .notAuthorized:
+                return "Only the circle admin can delete this circle"
+            case .cannotLeaveOnlyCircle:
+                return "You cannot leave your only circle. Create or join another circle first."
             }
         }
     }
@@ -223,6 +229,61 @@ class FirestoreService: ObservableObject {
         try await db.collection("users").document(userId).updateData([
             "circleIds": FieldValue.arrayRemove([circleId])
         ])
+
+        // If this was the current circle, switch to another one
+        if currentCircleId == circleId {
+            let remainingCircles = circles.filter { $0.id != circleId }
+            if let nextCircle = remainingCircles.first {
+                switchCircle(to: nextCircle.id)
+            } else {
+                currentCircleId = nil
+            }
+        }
+    }
+
+    /// Delete a circle entirely (only admin/creator can do this)
+    func deleteCircle(circleId: String) async throws {
+        guard let userId = Auth.auth().currentUser?.uid else {
+            throw CircleError.notAuthenticated
+        }
+
+        // Get the circle to check if user is admin
+        let circleDoc = try await db.collection("circles").document(circleId).getDocument()
+        guard let circleData = circleDoc.data() else {
+            throw CircleError.networkError
+        }
+
+        // Check if user is admin (creator or in adminIds array)
+        let createdBy = circleData["createdBy"] as? String
+        let adminIds = circleData["adminIds"] as? [String] ?? []
+        let isAdmin = createdBy == userId || adminIds.contains(userId)
+
+        guard isAdmin else {
+            throw CircleError.notAuthorized
+        }
+
+        // Get all member IDs before deletion
+        let memberIds = circleData["memberIds"] as? [String] ?? []
+
+        // Remove circle reference from all members
+        for memberId in memberIds {
+            try? await db.collection("users").document(memberId).updateData([
+                "circleIds": FieldValue.arrayRemove([circleId])
+            ])
+        }
+
+        // Delete the circle document
+        try await db.collection("circles").document(circleId).delete()
+
+        // If this was the current circle, switch to another one
+        if currentCircleId == circleId {
+            let remainingCircles = circles.filter { $0.id != circleId }
+            if let nextCircle = remainingCircles.first {
+                switchCircle(to: nextCircle.id)
+            } else {
+                currentCircleId = nil
+            }
+        }
     }
 
     func listenToCircles() {

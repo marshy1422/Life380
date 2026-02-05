@@ -7,6 +7,7 @@ struct CircleView: View {
     @Binding var selectedTab: Int
     @State private var showingCreateCircle = false
     @State private var showingJoinCircle = false
+    @State private var showingManageCircles = false
     @State private var deepLinkCode: String?
 
     var body: some View {
@@ -86,6 +87,14 @@ struct CircleView: View {
                         } label: {
                             Label("Join Circle", systemImage: "person.badge.plus")
                         }
+
+                        Divider()
+
+                        Button {
+                            showingManageCircles = true
+                        } label: {
+                            Label("Manage Circles", systemImage: "gearshape")
+                        }
                     } label: {
                         Image(systemName: "ellipsis.circle")
                     }
@@ -99,6 +108,9 @@ struct CircleView: View {
                     .onDisappear {
                         deepLinkCode = nil
                     }
+            }
+            .sheet(isPresented: $showingManageCircles) {
+                ManageCirclesSheet()
             }
             .onReceive(NotificationCenter.default.publisher(for: .joinCircleDeepLink)) { notification in
                 if let code = notification.userInfo?["code"] as? String {
@@ -451,6 +463,186 @@ struct MemberRow: View {
         .buttonStyle(.plain)
     }
 }
+
+// MARK: - Manage Circles Sheet
+
+struct ManageCirclesSheet: View {
+    @EnvironmentObject var firestoreService: FirestoreService
+    @Environment(\.dismiss) private var dismiss
+
+    @State private var circleToLeave: FamilyCircle?
+    @State private var circleToDelete: FamilyCircle?
+    @State private var showLeaveAlert = false
+    @State private var showDeleteAlert = false
+    @State private var isProcessing = false
+    @State private var errorMessage: String?
+
+    private var currentUserId: String? {
+        FirebaseAuth.Auth.auth().currentUser?.uid
+    }
+
+    var body: some View {
+        NavigationStack {
+            List {
+                if firestoreService.circles.isEmpty {
+                    Section {
+                        Text("You're not a member of any circles.")
+                            .foregroundColor(.secondary)
+                    }
+                } else {
+                    Section {
+                        ForEach(firestoreService.circles) { circle in
+                            CircleManagementRow(
+                                circle: circle,
+                                isCurrentCircle: circle.id == firestoreService.currentCircleId,
+                                isAdmin: currentUserId.map { circle.isAdmin($0) } ?? false,
+                                onLeave: {
+                                    circleToLeave = circle
+                                    showLeaveAlert = true
+                                },
+                                onDelete: {
+                                    circleToDelete = circle
+                                    showDeleteAlert = true
+                                }
+                            )
+                        }
+                    } header: {
+                        Text("Your Circles")
+                    } footer: {
+                        Text("Swipe left on a circle to leave or delete it.")
+                    }
+                }
+
+                if let error = errorMessage {
+                    Section {
+                        Text(error)
+                            .foregroundColor(.red)
+                    }
+                }
+            }
+            .navigationTitle("Manage Circles")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Done") { dismiss() }
+                }
+            }
+            .alert("Leave Circle?", isPresented: $showLeaveAlert, presenting: circleToLeave) { circle in
+                Button("Cancel", role: .cancel) { }
+                Button("Leave", role: .destructive) {
+                    leaveCircle(circle)
+                }
+            } message: { circle in
+                Text("Are you sure you want to leave \"\(circle.name)\"? You'll need an invite code to rejoin.")
+            }
+            .alert("Delete Circle?", isPresented: $showDeleteAlert, presenting: circleToDelete) { circle in
+                Button("Cancel", role: .cancel) { }
+                Button("Delete", role: .destructive) {
+                    deleteCircle(circle)
+                }
+            } message: { circle in
+                Text("Are you sure you want to permanently delete \"\(circle.name)\"? This will remove all members and cannot be undone.")
+            }
+            .overlay {
+                if isProcessing {
+                    ProgressView()
+                        .scaleEffect(1.5)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .background(Color(.systemBackground).opacity(0.5))
+                }
+            }
+        }
+    }
+
+    private func leaveCircle(_ circle: FamilyCircle) {
+        guard firestoreService.circles.count > 1 else {
+            errorMessage = "You cannot leave your only circle. Create or join another circle first."
+            return
+        }
+
+        isProcessing = true
+        errorMessage = nil
+
+        Task {
+            do {
+                try await firestoreService.leaveCircle(circleId: circle.id)
+            } catch {
+                errorMessage = error.localizedDescription
+            }
+            isProcessing = false
+        }
+    }
+
+    private func deleteCircle(_ circle: FamilyCircle) {
+        isProcessing = true
+        errorMessage = nil
+
+        Task {
+            do {
+                try await firestoreService.deleteCircle(circleId: circle.id)
+            } catch {
+                errorMessage = error.localizedDescription
+            }
+            isProcessing = false
+        }
+    }
+}
+
+struct CircleManagementRow: View {
+    let circle: FamilyCircle
+    let isCurrentCircle: Bool
+    let isAdmin: Bool
+    let onLeave: () -> Void
+    let onDelete: () -> Void
+
+    var body: some View {
+        HStack {
+            VStack(alignment: .leading, spacing: 4) {
+                HStack {
+                    Text(circle.name)
+                        .font(.headline)
+                    if isCurrentCircle {
+                        Text("Current")
+                            .font(.caption)
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 2)
+                            .background(Color.blue)
+                            .cornerRadius(4)
+                    }
+                }
+
+                HStack(spacing: 8) {
+                    Label("\(circle.memberIds.count)", systemImage: "person.2")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+
+                    if isAdmin {
+                        Label("Admin", systemImage: "star.fill")
+                            .font(.caption)
+                            .foregroundColor(.orange)
+                    }
+                }
+            }
+
+            Spacer()
+        }
+        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+            if isAdmin {
+                Button(role: .destructive, action: onDelete) {
+                    Label("Delete", systemImage: "trash")
+                }
+            }
+
+            Button(action: onLeave) {
+                Label("Leave", systemImage: "rectangle.portrait.and.arrow.right")
+            }
+            .tint(.orange)
+        }
+    }
+}
+
+import FirebaseAuth
 
 #Preview {
     CircleView(memberToLocate: .constant(nil), selectedTab: .constant(3))

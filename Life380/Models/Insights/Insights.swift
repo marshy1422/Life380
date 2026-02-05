@@ -109,6 +109,60 @@ struct TravelRecord: Identifiable, Codable {
         self.distance = distance
         self.averageSpeed = averageSpeed
     }
+
+    init?(dictionary: [String: Any]) {
+        guard let id = dictionary["id"] as? String,
+              let userId = dictionary["userId"] as? String,
+              let distance = dictionary["distance"] as? Double,
+              let averageSpeed = dictionary["averageSpeed"] as? Double else { return nil }
+
+        // Handle Firestore Timestamp or Date
+        let startTime: Date
+        let endTime: Date
+        if let startTs = dictionary["startTime"] as? Date {
+            startTime = startTs
+        } else if let startDict = dictionary["startTime"] as? [String: Any],
+                  let seconds = startDict["seconds"] as? Int64 {
+            startTime = Date(timeIntervalSince1970: TimeInterval(seconds))
+        } else {
+            return nil
+        }
+        if let endTs = dictionary["endTime"] as? Date {
+            endTime = endTs
+        } else if let endDict = dictionary["endTime"] as? [String: Any],
+                  let seconds = endDict["seconds"] as? Int64 {
+            endTime = Date(timeIntervalSince1970: TimeInterval(seconds))
+        } else {
+            return nil
+        }
+
+        self.id = id
+        self.userId = userId
+        self.fromPlaceId = dictionary["fromPlaceId"] as? String
+        self.fromPlaceName = dictionary["fromPlaceName"] as? String
+        self.toPlaceId = dictionary["toPlaceId"] as? String
+        self.toPlaceName = dictionary["toPlaceName"] as? String
+        self.startTime = startTime
+        self.endTime = endTime
+        self.distance = distance
+        self.averageSpeed = averageSpeed
+    }
+
+    var dictionary: [String: Any] {
+        var dict: [String: Any] = [
+            "id": id,
+            "userId": userId,
+            "startTime": startTime,
+            "endTime": endTime,
+            "distance": distance,
+            "averageSpeed": averageSpeed
+        ]
+        if let fromPlaceId = fromPlaceId { dict["fromPlaceId"] = fromPlaceId }
+        if let fromPlaceName = fromPlaceName { dict["fromPlaceName"] = fromPlaceName }
+        if let toPlaceId = toPlaceId { dict["toPlaceId"] = toPlaceId }
+        if let toPlaceName = toPlaceName { dict["toPlaceName"] = toPlaceName }
+        return dict
+    }
 }
 
 /// Aggregated commute statistics for a route
@@ -164,6 +218,40 @@ struct CommuteStats: Identifiable, Codable {
         totalDistance += distance
         shortestDuration = min(shortestDuration, duration)
         longestDuration = max(longestDuration, duration)
+    }
+
+    init?(dictionary: [String: Any]) {
+        guard let id = dictionary["id"] as? String,
+              let fromPlaceId = dictionary["fromPlaceId"] as? String,
+              let fromPlaceName = dictionary["fromPlaceName"] as? String,
+              let toPlaceId = dictionary["toPlaceId"] as? String,
+              let toPlaceName = dictionary["toPlaceName"] as? String else { return nil }
+
+        self.id = id
+        self.fromPlaceId = fromPlaceId
+        self.fromPlaceName = fromPlaceName
+        self.toPlaceId = toPlaceId
+        self.toPlaceName = toPlaceName
+        self.tripCount = dictionary["tripCount"] as? Int ?? 0
+        self.totalDuration = dictionary["totalDuration"] as? TimeInterval ?? 0
+        self.shortestDuration = dictionary["shortestDuration"] as? TimeInterval ?? .infinity
+        self.longestDuration = dictionary["longestDuration"] as? TimeInterval ?? 0
+        self.totalDistance = dictionary["totalDistance"] as? Double ?? 0
+    }
+
+    var dictionary: [String: Any] {
+        [
+            "id": id,
+            "fromPlaceId": fromPlaceId,
+            "fromPlaceName": fromPlaceName,
+            "toPlaceId": toPlaceId,
+            "toPlaceName": toPlaceName,
+            "tripCount": tripCount,
+            "totalDuration": totalDuration,
+            "shortestDuration": shortestDuration == .infinity ? 0 : shortestDuration,
+            "longestDuration": longestDuration,
+            "totalDistance": totalDistance
+        ]
     }
 }
 

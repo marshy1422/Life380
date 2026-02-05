@@ -122,17 +122,6 @@ struct SettingsView: View {
                     }
 
                     NavigationLink {
-                        MLTrainingView()
-                    } label: {
-                        HStack {
-                            Label("ML Model Training", systemImage: "cpu")
-                            Spacer()
-                            Image(systemName: "gearshape.2")
-                                .foregroundColor(.orange)
-                        }
-                    }
-
-                    NavigationLink {
                         DriveSafetyView()
                     } label: {
                         HStack {
@@ -656,7 +645,7 @@ class GDPRDataExporter {
                 [
                     "id": place.id,
                     "name": place.name,
-                    "address": place.address ?? "",
+                    "address": place.address,
                     "latitude": place.coordinate.latitude,
                     "longitude": place.coordinate.longitude,
                     "radius": place.radius

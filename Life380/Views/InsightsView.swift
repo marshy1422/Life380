@@ -60,6 +60,9 @@ struct InsightsView: View {
             .task {
                 await loadInsights()
             }
+            .onChange(of: selectedTimeRange) {
+                Task { await loadInsights() }
+            }
         }
     }
 
@@ -305,6 +308,12 @@ struct InsightsView: View {
 
                     BarMark(
                         x: .value("Day", activity.dayOfWeek),
+                        y: .value("Hours", activity.travelHours)
+                    )
+                    .foregroundStyle(Color.orange.opacity(0.7))
+
+                    BarMark(
+                        x: .value("Day", activity.dayOfWeek),
                         y: .value("Hours", activity.otherHours)
                     )
                     .foregroundStyle(Color.gray.opacity(0.5))
@@ -318,6 +327,7 @@ struct InsightsView: View {
                 HStack(spacing: 16) {
                     LegendItem(color: .green, label: "Home")
                     LegendItem(color: .blue, label: "Work")
+                    LegendItem(color: .orange, label: "Travel")
                     LegendItem(color: .gray, label: "Other")
                 }
                 .font(.caption)
@@ -374,7 +384,19 @@ struct InsightsView: View {
     private func loadInsights() async {
         isLoading = true
         let userId = selectedMember?.id ?? Auth.auth().currentUser?.uid ?? ""
-        await insightsService.loadInsights(for: userId)
+
+        // Convert view TimeRange to service TimeRange
+        let serviceTimeRange: InsightsService.TimeRange
+        switch selectedTimeRange {
+        case .today:
+            serviceTimeRange = .today
+        case .week:
+            serviceTimeRange = .week
+        case .month:
+            serviceTimeRange = .month
+        }
+
+        await insightsService.loadInsights(for: userId, timeRange: serviceTimeRange)
         _ = await insightsService.generateWeeklySummary()
         isLoading = false
     }

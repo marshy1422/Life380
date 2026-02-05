@@ -1,5 +1,7 @@
 import SwiftUI
 import FirebaseCore
+import FirebaseAnalytics
+import FirebaseCrashlytics
 
 @main
 struct Life380App: App {
@@ -10,6 +12,12 @@ struct Life380App: App {
 
     init() {
         FirebaseApp.configure()
+
+        // Enable Crashlytics collection
+        Crashlytics.crashlytics().setCrashlyticsCollectionEnabled(true)
+
+        // Log app launch
+        Analytics.logEvent(AnalyticsEventAppOpen, parameters: nil)
     }
 
     var body: some Scene {

@@ -39,6 +39,11 @@ class InsightsService: ObservableObject {
 
     private init() {
         loadTrackingPreference()
+        Task {
+            await loadTodaysSummary()
+            await loadRecentTravelRecords()
+            await loadCommuteStats()
+        }
     }
 
     // MARK: - Tracking Control
@@ -273,6 +278,7 @@ class InsightsService: ObservableObject {
         let dateString = dateFormatter.string(from: summary.date)
 
         do {
+            // Upload daily summary
             try await db.collection("circles")
                 .document(circleId)
                 .collection("insights")
@@ -281,43 +287,228 @@ class InsightsService: ObservableObject {
                 .document(dateString)
                 .setData(summary.dictionary, merge: true)
 
+            // Upload travel records for today
+            await uploadTravelRecords(circleId: circleId, userId: userId)
+
+            // Upload commute stats
+            await uploadCommuteStats(circleId: circleId, userId: userId)
+
             lastAggregationTime = Date()
-            logger.info("📊 Uploaded daily summary")
+            logger.info("📊 Uploaded daily summary, travel records, and commute stats")
         } catch {
             logger.error("Failed to upload insights: \(error.localizedDescription)")
         }
     }
 
-    // MARK: - Data Retrieval
-
-    /// Load insights for a user (self or circle member)
-    func loadInsights(for userId: String) async {
-        guard let circleId = FirestoreService.shared.currentCircleId else { return }
-
-        // Load last 7 days of daily summaries
+    private func uploadTravelRecords(circleId: String, userId: String) async {
         let calendar = Calendar.current
-        let startDate = calendar.date(byAdding: .day, value: -7, to: Date())!
+        let today = calendar.startOfDay(for: Date())
+
+        // Only upload today's travel records
+        let todaysRecords = recentTravelRecords.filter { calendar.isDate($0.startTime, inSameDayAs: today) }
+
+        for record in todaysRecords {
+            do {
+                try await db.collection("circles")
+                    .document(circleId)
+                    .collection("insights")
+                    .document(userId)
+                    .collection("travelRecords")
+                    .document(record.id)
+                    .setData(record.dictionary)
+            } catch {
+                logger.error("Failed to upload travel record: \(error.localizedDescription)")
+            }
+        }
+    }
+
+    private func uploadCommuteStats(circleId: String, userId: String) async {
+        for stats in commuteStats {
+            do {
+                try await db.collection("circles")
+                    .document(circleId)
+                    .collection("insights")
+                    .document(userId)
+                    .collection("commuteStats")
+                    .document(stats.id)
+                    .setData(stats.dictionary, merge: true)
+            } catch {
+                logger.error("Failed to upload commute stats: \(error.localizedDescription)")
+            }
+        }
+    }
+
+    // MARK: - Load from Firestore
+
+    private func loadTodaysSummary() async {
+        guard let userId = Auth.auth().currentUser?.uid,
+              let circleId = FirestoreService.shared.currentCircleId else { return }
+
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy-MM-dd"
+        let todayString = dateFormatter.string(from: Date())
+
+        do {
+            let doc = try await db.collection("circles")
+                .document(circleId)
+                .collection("insights")
+                .document(userId)
+                .collection("dailySummaries")
+                .document(todayString)
+                .getDocument()
+
+            if let data = doc.data(),
+               let date = (data["date"] as? Timestamp)?.dateValue(),
+               let placeDurations = data["placeDurations"] as? [String: Double] {
+                let placeNames = data["placeNames"] as? [String: String] ?? [:]
+
+                todaysSummary = DailyDwellSummary(
+                    userId: userId,
+                    date: date,
+                    placeDurations: placeDurations,
+                    placeNames: placeNames
+                )
+                logger.info("📊 Loaded today's summary from Firestore")
+            }
+        } catch {
+            logger.error("Failed to load today's summary: \(error.localizedDescription)")
+        }
+    }
+
+    private func loadRecentTravelRecords() async {
+        guard let userId = Auth.auth().currentUser?.uid,
+              let circleId = FirestoreService.shared.currentCircleId else { return }
+
+        let calendar = Calendar.current
+        let weekAgo = calendar.date(byAdding: .day, value: -7, to: Date())!
 
         do {
             let snapshot = try await db.collection("circles")
                 .document(circleId)
                 .collection("insights")
                 .document(userId)
+                .collection("travelRecords")
+                .whereField("startTime", isGreaterThan: Timestamp(date: weekAgo))
+                .order(by: "startTime", descending: true)
+                .limit(to: 50)
+                .getDocuments()
+
+            var records: [TravelRecord] = []
+            for doc in snapshot.documents {
+                if let record = TravelRecord(dictionary: doc.data()) {
+                    records.append(record)
+                }
+            }
+            recentTravelRecords = records
+            logger.info("📊 Loaded \(records.count) travel records from Firestore")
+        } catch {
+            logger.error("Failed to load travel records: \(error.localizedDescription)")
+        }
+    }
+
+    private func loadCommuteStats() async {
+        guard let userId = Auth.auth().currentUser?.uid,
+              let circleId = FirestoreService.shared.currentCircleId else { return }
+
+        do {
+            let snapshot = try await db.collection("circles")
+                .document(circleId)
+                .collection("insights")
+                .document(userId)
+                .collection("commuteStats")
+                .getDocuments()
+
+            var stats: [CommuteStats] = []
+            for doc in snapshot.documents {
+                if let stat = CommuteStats(dictionary: doc.data()) {
+                    stats.append(stat)
+                }
+            }
+            commuteStats = stats
+            logger.info("📊 Loaded \(stats.count) commute stats from Firestore")
+        } catch {
+            logger.error("Failed to load commute stats: \(error.localizedDescription)")
+        }
+    }
+
+    // MARK: - Data Retrieval
+
+    enum TimeRange: CustomStringConvertible {
+        case today
+        case week
+        case month
+
+        var description: String {
+            switch self {
+            case .today: return "today"
+            case .week: return "week"
+            case .month: return "month"
+            }
+        }
+    }
+
+    /// Load insights for a user (self or circle member)
+    func loadInsights(for userId: String, timeRange: TimeRange = .week) async {
+        guard let circleId = FirestoreService.shared.currentCircleId else { return }
+
+        let calendar = Calendar.current
+        let now = Date()
+
+        // Determine date range based on selection
+        let startDate: Date
+        switch timeRange {
+        case .today:
+            startDate = calendar.startOfDay(for: now)
+        case .week:
+            startDate = calendar.date(byAdding: .day, value: -7, to: now)!
+        case .month:
+            startDate = calendar.date(byAdding: .day, value: -30, to: now)!
+        }
+
+        do {
+            // Load daily summaries
+            let summarySnapshot = try await db.collection("circles")
+                .document(circleId)
+                .collection("insights")
+                .document(userId)
                 .collection("dailySummaries")
-                .whereField("date", isGreaterThan: startDate)
+                .whereField("date", isGreaterThan: Timestamp(date: startDate))
                 .order(by: "date", descending: true)
                 .getDocuments()
 
-            var activities: [DailyActivity] = []
-            let dateFormatter = DateFormatter()
-            dateFormatter.dateFormat = "EEE"
+            // Load travel records for the same period
+            let travelSnapshot = try await db.collection("circles")
+                .document(circleId)
+                .collection("insights")
+                .document(userId)
+                .collection("travelRecords")
+                .whereField("startTime", isGreaterThan: Timestamp(date: startDate))
+                .order(by: "startTime", descending: true)
+                .getDocuments()
 
-            for doc in snapshot.documents {
+            // Group travel records by date
+            var travelByDate: [String: [TravelRecord]] = [:]
+            let dateFmt = DateFormatter()
+            dateFmt.dateFormat = "yyyy-MM-dd"
+
+            for doc in travelSnapshot.documents {
+                if let record = TravelRecord(dictionary: doc.data()) {
+                    let dateKey = dateFmt.string(from: record.startTime)
+                    travelByDate[dateKey, default: []].append(record)
+                }
+            }
+
+            var activities: [DailyActivity] = []
+            let dayFormatter = DateFormatter()
+            dayFormatter.dateFormat = "EEE"
+
+            for doc in summarySnapshot.documents {
                 let data = doc.data()
                 guard let date = (data["date"] as? Timestamp)?.dateValue(),
                       let placeDurations = data["placeDurations"] as? [String: Double] else { continue }
 
                 let placeNames = data["placeNames"] as? [String: String] ?? [:]
+                let dateKey = dateFmt.string(from: date)
 
                 var homeHours: Double = 0
                 var workHours: Double = 0
@@ -336,19 +527,23 @@ class InsightsService: ObservableObject {
                     }
                 }
 
+                // Calculate travel hours from travel records for this date
+                let dayTravelRecords = travelByDate[dateKey] ?? []
+                let travelHours = dayTravelRecords.reduce(0.0) { $0 + $1.duration } / 3600
+
                 let activity = DailyActivity(
                     date: date,
-                    dayOfWeek: dateFormatter.string(from: date),
+                    dayOfWeek: dayFormatter.string(from: date),
                     homeHours: homeHours,
                     workHours: workHours,
-                    travelHours: 0, // Would need travel data
+                    travelHours: travelHours,
                     otherHours: otherHours
                 )
                 activities.append(activity)
             }
 
             weeklyActivities = activities.sorted { $0.date < $1.date }
-            logger.info("📊 Loaded \(activities.count) days of insights")
+            logger.info("📊 Loaded \(activities.count) days of insights for \(timeRange)")
 
         } catch {
             logger.error("Failed to load insights: \(error.localizedDescription)")

@@ -10,6 +10,8 @@
 		31BB6B8A2F2716910005B915 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 31BB6B892F2716910005B915 /* FirebaseAuth */; };
 		31BB6B8C2F2716910005B915 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 31BB6B8B2F2716910005B915 /* FirebaseFirestore */; };
 		31BB6B8E2F2716910005B915 /* FirebaseMessaging in Frameworks */ = {isa = PBXBuildFile; productRef = 31BB6B8D2F2716910005B915 /* FirebaseMessaging */; };
+		31BB6B8F2F2716910005B915 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = 31BB6B902F2716910005B915 /* FirebaseAnalytics */; };
+		31BB6B912F2716910005B915 /* FirebaseCrashlytics in Frameworks */ = {isa = PBXBuildFile; productRef = 31BB6B922F2716910005B915 /* FirebaseCrashlytics */; };
 		/* App */
 		B1000001000100000000001A /* Life380App.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000001000200000000001A /* Life380App.swift */; };
 		B1000001000100000000002A /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000001000200000000002A /* AppDelegate.swift */; };
@@ -68,8 +70,6 @@
 		B1000004000100000000013A /* InsightsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000004000200000000013A /* InsightsService.swift */; };
 		B1000004000100000000014A /* ETAService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000004000200000000014A /* ETAService.swift */; };
 		/* Core AI */
-		/* Core AI ML */
-		D1000001000100000000005A /* MLTrainingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1000001000200000000005A /* MLTrainingView.swift */; };
 		/* Core AI Safety */
 		E1000001000100000000001A /* DriveEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1000001000200000000001A /* DriveEvent.swift */; };
 		E1000001000100000000002A /* DriveScore.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1000001000200000000002A /* DriveScore.swift */; };
@@ -210,8 +210,6 @@
 		B1000004000200000000013A /* InsightsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InsightsService.swift; sourceTree = "<group>"; };
 		B1000004000200000000014A /* ETAService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ETAService.swift; sourceTree = "<group>"; };
 		/* Core AI */
-		/* Core AI ML */
-		D1000001000200000000005A /* MLTrainingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MLTrainingView.swift; sourceTree = "<group>"; };
 		/* Core AI Safety */
 		E1000001000200000000001A /* DriveEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DriveEvent.swift; sourceTree = "<group>"; };
 		E1000001000200000000002A /* DriveScore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DriveScore.swift; sourceTree = "<group>"; };
@@ -298,6 +296,8 @@
 				31BB6B8E2F2716910005B915 /* FirebaseMessaging in Frameworks */,
 				31BB6B8A2F2716910005B915 /* FirebaseAuth in Frameworks */,
 				31BB6B8C2F2716910005B915 /* FirebaseFirestore in Frameworks */,
+				31BB6B8F2F2716910005B915 /* FirebaseAnalytics in Frameworks */,
+				31BB6B912F2716910005B915 /* FirebaseCrashlytics in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -823,7 +823,6 @@
 		B1000010000000000000042A /* Views */ = {
 			isa = PBXGroup;
 			children = (
-				D1000001000200000000005A /* MLTrainingView.swift */,
 				E1000001000200000000005A /* DriveSafetyView.swift */,
 				E1000001000200000000007A /* CrashDetectionView.swift */,
 				B1000005000200000000020A /* SettingsView.swift */,
@@ -990,6 +989,8 @@
 				31BB6B892F2716910005B915 /* FirebaseAuth */,
 				31BB6B8B2F2716910005B915 /* FirebaseFirestore */,
 				31BB6B8D2F2716910005B915 /* FirebaseMessaging */,
+				31BB6B902F2716910005B915 /* FirebaseAnalytics */,
+				31BB6B922F2716910005B915 /* FirebaseCrashlytics */,
 			);
 			productName = Life380;
 			productReference = A1000001001600000000001A /* Life380.app */;
@@ -1140,7 +1141,6 @@
 				B1000005000100000000018A /* PlacesListView.swift in Sources */,
 				B1000005000100000000019A /* PlacesViewModel.swift in Sources */,
 				/* Features Settings */
-				D1000001000100000000005A /* MLTrainingView.swift in Sources */,
 				B1000005000100000000020A /* SettingsView.swift in Sources */,
 				B1000005000100000000021A /* DeleteAccountView.swift in Sources */,
 				B1000005000100000000022A /* BetaFeedbackView.swift in Sources */,
@@ -1310,7 +1310,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Life380/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Life380;
-				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = YES;
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.social-networking";
 				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "Life380 uses background location to notify your family when you arrive or leave places, even when the app is closed. This helps keep everyone connected and safe.";
 				INFOPLIST_KEY_NSLocationAlwaysUsageDescription = "Life380 uses background location to notify your family when you arrive or leave places, even when the app is closed.";
@@ -1348,7 +1348,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Life380/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Life380;
-				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = YES;
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.social-networking";
 				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "Life380 uses background location to notify your family when you arrive or leave places, even when the app is closed. This helps keep everyone connected and safe.";
 				INFOPLIST_KEY_NSLocationAlwaysUsageDescription = "Life380 uses background location to notify your family when you arrive or leave places, even when the app is closed.";
@@ -1422,6 +1422,16 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 31BB6B882F2716910005B915 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseMessaging;
+		};
+		31BB6B902F2716910005B915 /* FirebaseAnalytics */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 31BB6B882F2716910005B915 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAnalytics;
+		};
+		31BB6B922F2716910005B915 /* FirebaseCrashlytics */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 31BB6B882F2716910005B915 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseCrashlytics;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

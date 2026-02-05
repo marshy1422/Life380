@@ -1693,33 +1693,12 @@ extension PrecisionLocationManager {
 
 // MARK: - Deferred Location Updates
 
-extension PrecisionLocationManager {
-
-    /// Enable deferred location updates for battery efficiency
-    /// Only works when app allows background location updates
-    func enableDeferredUpdates(distance: CLLocationDistance = 1000, timeout: TimeInterval = 600) {
-        guard CLLocationManager.deferredLocationUpdatesAvailable() else {
-            logger.warning("Deferred location updates not available on this device")
-            return
-        }
-
-        locationManager.allowDeferredLocationUpdates(untilTraveled: distance, timeout: timeout)
-        logger.info("Enabled deferred updates: \(Int(distance))m or \(Int(timeout))s")
-    }
-
-    /// Disable deferred location updates
-    func disableDeferredUpdates() {
-        locationManager.disallowDeferredLocationUpdates()
-    }
-
-    func locationManager(_ manager: CLLocationManager, didFinishDeferredUpdatesWithError error: Error?) {
-        if let error = error {
-            logger.error("Deferred updates finished with error: \(error.localizedDescription)")
-        } else {
-            logger.info("Deferred updates delivered successfully")
-        }
-    }
-}
+// Note: Deferred location updates were deprecated in iOS 13.0 and removed.
+// Battery-efficient location is now handled automatically by iOS via:
+// - desiredAccuracy settings
+// - activityType configuration
+// - allowsBackgroundLocationUpdates
+// - pausesLocationUpdatesAutomatically
 
 // MARK: - Notification Names
 

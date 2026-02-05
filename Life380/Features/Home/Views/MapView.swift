@@ -19,6 +19,7 @@ struct MapView: View {
     @State private var isRefreshing: Bool = false
     @State private var isLoadingLocation: Bool = true
     @State private var locationError: String?
+    @State private var mapStyle: MapStyle = .standard
 
     // Task management to prevent memory leaks
     @State private var locationUpdateTask: Task<Void, Never>?
@@ -28,6 +29,20 @@ struct MapView: View {
     @State private var lastUploadTime: Date?
     private let minimumUploadInterval: TimeInterval = 30 // seconds
     private let minimumDistanceChange: Double = 20 // meters (tighter with precision filtering)
+
+    enum MapStyle: String, CaseIterable {
+        case standard = "Standard"
+        case satellite = "Satellite"
+        case hybrid = "Hybrid"
+
+        var icon: String {
+            switch self {
+            case .standard: return "map"
+            case .satellite: return "globe.americas"
+            case .hybrid: return "map.fill"
+            }
+        }
+    }
 
     var body: some View {
         NavigationStack {
@@ -78,6 +93,7 @@ struct MapView: View {
                 showPrecisionInfo: $showPrecisionInfo,
                 selectedMember: $selectedMember,
                 isRefreshing: $isRefreshing,
+                mapStyle: $mapStyle,
                 centerOnUser: centerOnUser,
                 refreshLocations: refreshLocations,
                 onSOSAlertTap: { alert in
@@ -193,12 +209,24 @@ struct MapView: View {
                 }
             }
         }
+        .mapStyle(currentMapStyle)
         .mapControls {
             MapUserLocationButton()
             MapCompass()
             MapScaleView()
         }
         .ignoresSafeArea(edges: .top)
+    }
+
+    private var currentMapStyle: MapKit.MapStyle {
+        switch mapStyle {
+        case .standard:
+            return .standard
+        case .satellite:
+            return .imagery
+        case .hybrid:
+            return .hybrid
+        }
     }
 
     @ToolbarContentBuilder
@@ -387,8 +415,10 @@ struct MapOverlayView: View {
     @Binding var showPrecisionInfo: Bool
     @Binding var selectedMember: UserProfile?
     @Binding var isRefreshing: Bool
+    @Binding var mapStyle: MapView.MapStyle
     @State private var showDebugPanel: Bool = false
     @State private var dismissedAlertIds: Set<String> = []
+    @State private var showMapStylePicker: Bool = false
     let centerOnUser: () -> Void
     let refreshLocations: () -> Void
     let onSOSAlertTap: ((SOSAlert) -> Void)?
@@ -397,6 +427,7 @@ struct MapOverlayView: View {
          showPrecisionInfo: Binding<Bool>,
          selectedMember: Binding<UserProfile?>,
          isRefreshing: Binding<Bool>,
+         mapStyle: Binding<MapView.MapStyle>,
          centerOnUser: @escaping () -> Void,
          refreshLocations: @escaping () -> Void,
          onSOSAlertTap: ((SOSAlert) -> Void)? = nil) {
@@ -404,6 +435,7 @@ struct MapOverlayView: View {
         self._showPrecisionInfo = showPrecisionInfo
         self._selectedMember = selectedMember
         self._isRefreshing = isRefreshing
+        self._mapStyle = mapStyle
         self.centerOnUser = centerOnUser
         self.refreshLocations = refreshLocations
         self.onSOSAlertTap = onSOSAlertTap
@@ -497,39 +529,89 @@ struct MapOverlayView: View {
     }
 
     private var locationButton: some View {
-        HStack {
+        VStack {
             Spacer()
-            VStack(spacing: 12) {
-                // Refresh button
-                Button(action: refreshLocations) {
-                    Group {
-                        if isRefreshing {
-                            ProgressView()
-                                .progressViewStyle(CircularProgressViewStyle())
-                        } else {
-                            Image(systemName: "arrow.clockwise")
-                        }
+            HStack {
+                Spacer()
+                VStack(spacing: 12) {
+                    // Map layer button
+                    Button(action: { showMapStylePicker.toggle() }) {
+                        Image(systemName: mapStyle.icon)
+                            .frame(width: 24, height: 24)
+                            .padding(12)
+                            .background(Color(.systemBackground))
+                            .clipShape(Circle())
+                            .shadow(radius: 4)
                     }
-                    .frame(width: 24, height: 24)
-                    .padding(12)
-                    .background(Color(.systemBackground))
-                    .clipShape(Circle())
-                    .shadow(radius: 4)
-                }
-                .disabled(isRefreshing)
+                    .popover(isPresented: $showMapStylePicker) {
+                        mapStylePicker
+                    }
 
-                // Center on user button
-                Button(action: centerOnUser) {
-                    Image(systemName: "location.fill")
+                    // Refresh button
+                    Button(action: refreshLocations) {
+                        Group {
+                            if isRefreshing {
+                                ProgressView()
+                                    .progressViewStyle(CircularProgressViewStyle())
+                            } else {
+                                Image(systemName: "arrow.clockwise")
+                            }
+                        }
                         .frame(width: 24, height: 24)
                         .padding(12)
                         .background(Color(.systemBackground))
                         .clipShape(Circle())
                         .shadow(radius: 4)
+                    }
+                    .disabled(isRefreshing)
+
+                    // Center on user button
+                    Button(action: centerOnUser) {
+                        Image(systemName: "location.fill")
+                            .frame(width: 24, height: 24)
+                            .padding(12)
+                            .background(Color(.systemBackground))
+                            .clipShape(Circle())
+                            .shadow(radius: 4)
+                    }
+                }
+                .padding()
+            }
+        }
+    }
+
+    private var mapStylePicker: some View {
+        VStack(spacing: 0) {
+            ForEach(MapView.MapStyle.allCases, id: \.self) { style in
+                Button(action: {
+                    withAnimation {
+                        mapStyle = style
+                        showMapStylePicker = false
+                    }
+                }) {
+                    HStack {
+                        Image(systemName: style.icon)
+                            .frame(width: 24)
+                        Text(style.rawValue)
+                        Spacer()
+                        if mapStyle == style {
+                            Image(systemName: "checkmark")
+                                .foregroundColor(.blue)
+                        }
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 12)
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+
+                if style != MapView.MapStyle.allCases.last {
+                    Divider()
                 }
             }
-            .padding()
         }
+        .frame(width: 180)
+        .presentationCompactAdaptation(.popover)
     }
 
     @ViewBuilder
