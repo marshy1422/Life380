@@ -356,11 +356,22 @@ class FirestoreService: ObservableObject {
                         } else {
                             self.circleMembers.append(profile)
                         }
+
+                        // Sync to widget
+                        self.syncToWidget()
                     }
                 }
 
             memberListeners[memberId] = listener
         }
+    }
+
+    // MARK: - Widget Sync
+
+    /// Sync current circle members to widget via App Groups
+    private func syncToWidget() {
+        let circleName = circles.first(where: { $0.id == currentCircleId })?.name
+        WidgetDataService.shared.updateWidgetData(members: circleMembers, circleName: circleName)
     }
 
     // MARK: - Places

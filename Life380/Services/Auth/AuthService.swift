@@ -76,6 +76,8 @@ class AuthService: NSObject, ObservableObject {
     func signOut() {
         do {
             try Auth.auth().signOut()
+            // Clear widget data on logout
+            WidgetDataService.shared.clearWidgetData()
         } catch {
             errorMessage = error.localizedDescription
         }

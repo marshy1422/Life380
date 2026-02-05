@@ -69,6 +69,9 @@
 		/* Services Analytics */
 		B1000004000100000000013A /* InsightsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000004000200000000013A /* InsightsService.swift */; };
 		B1000004000100000000014A /* ETAService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000004000200000000014A /* ETAService.swift */; };
+		B1000004000100000000015A /* AnalyticsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000004000200000000015A /* AnalyticsService.swift */; };
+		/* Services Widget */
+		W1000001000100000000001A /* WidgetDataService.swift in Sources */ = {isa = PBXBuildFile; fileRef = W1000001000200000000001A /* WidgetDataService.swift */; };
 		/* Core AI */
 		/* Core AI Safety */
 		E1000001000100000000001A /* DriveEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1000001000200000000001A /* DriveEvent.swift */; };
@@ -209,6 +212,9 @@
 		/* Services Analytics */
 		B1000004000200000000013A /* InsightsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InsightsService.swift; sourceTree = "<group>"; };
 		B1000004000200000000014A /* ETAService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ETAService.swift; sourceTree = "<group>"; };
+		B1000004000200000000015A /* AnalyticsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalyticsService.swift; sourceTree = "<group>"; };
+		/* Services Widget */
+		W1000001000200000000001A /* WidgetDataService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetDataService.swift; sourceTree = "<group>"; };
 		/* Core AI */
 		/* Core AI Safety */
 		E1000001000200000000001A /* DriveEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DriveEvent.swift; sourceTree = "<group>"; };
@@ -546,6 +552,7 @@
 				B1000010000000000000022A /* Circle */,
 				B1000010000000000000023A /* Safety */,
 				B1000010000000000000024A /* Analytics */,
+				W1000010000000000000001A /* Widget */,
 				G1000010000000000000001A /* Subscription */,
 			);
 			path = Services;
@@ -604,8 +611,17 @@
 			children = (
 				B1000004000200000000013A /* InsightsService.swift */,
 				B1000004000200000000014A /* ETAService.swift */,
+				B1000004000200000000015A /* AnalyticsService.swift */,
 			);
 			path = Analytics;
+			sourceTree = "<group>";
+		};
+		W1000010000000000000001A /* Widget */ = {
+			isa = PBXGroup;
+			children = (
+				W1000001000200000000001A /* WidgetDataService.swift */,
+			);
+			path = Widget;
 			sourceTree = "<group>";
 		};
 		/* Services Subscription Group */
@@ -1116,6 +1132,8 @@
 				B1000004000100000000012A /* SecurityService.swift in Sources */,
 				B1000004000100000000013A /* InsightsService.swift in Sources */,
 				B1000004000100000000014A /* ETAService.swift in Sources */,
+				B1000004000100000000015A /* AnalyticsService.swift in Sources */,
+				W1000001000100000000001A /* WidgetDataService.swift in Sources */,
 				/* Features Authentication */
 				B1000005000100000000001A /* LoginView.swift in Sources */,
 				B1000005000100000000002A /* SignUpView.swift in Sources */,
