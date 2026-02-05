@@ -750,7 +750,7 @@ struct JoinCircleView: View {
     var body: some View {
         Form {
             Section {
-                TextField("XXXXXX", text: $inviteCode)
+                TextField("ABC123", text: $inviteCode)
                     .textInputAutocapitalization(.characters)
                     .font(.system(.title2, design: .monospaced))
                     .multilineTextAlignment(.center)

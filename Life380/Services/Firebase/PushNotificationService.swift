@@ -304,6 +304,87 @@ class PushNotificationService: ObservableObject {
         }
     }
 
+    // MARK: - Circle Join Request Notifications
+
+    /// Notify circle admins when someone requests to join
+    func notifyCircleJoinRequest(userName: String, userEmail: String, circleName: String) {
+        let content = UNMutableNotificationContent()
+        content.title = "Join Request"
+        content.body = "\(userName) wants to join your circle \"\(circleName)\""
+        content.sound = .default
+        content.categoryIdentifier = "JOIN_REQUEST"
+        content.userInfo = [
+            "type": "join_request",
+            "userName": userName,
+            "userEmail": userEmail,
+            "circleName": circleName
+        ]
+
+        let request = UNNotificationRequest(
+            identifier: "join_request_\(userName)_\(Date().timeIntervalSince1970)",
+            content: content,
+            trigger: nil
+        )
+
+        notificationCenter.add(request) { error in
+            if let error = error {
+                logger.error("Failed to send join request notification: \(error.localizedDescription)")
+            } else {
+                logger.info("Sent join request notification: \(userName) wants to join \(circleName)")
+            }
+        }
+    }
+
+    /// Notify user when their join request is approved
+    func notifyJoinRequestApproved(circleName: String) {
+        let content = UNMutableNotificationContent()
+        content.title = "Welcome to \(circleName)!"
+        content.body = "Your request to join \(circleName) has been approved"
+        content.sound = .default
+        content.categoryIdentifier = "JOIN_APPROVED"
+        content.userInfo = [
+            "type": "join_approved",
+            "circleName": circleName
+        ]
+
+        let request = UNNotificationRequest(
+            identifier: "join_approved_\(Date().timeIntervalSince1970)",
+            content: content,
+            trigger: nil
+        )
+
+        notificationCenter.add(request) { error in
+            if let error = error {
+                logger.error("Failed to send approval notification: \(error.localizedDescription)")
+            }
+        }
+    }
+
+    /// Notify user when their join request is denied
+    func notifyJoinRequestDenied(circleName: String, reason: String?) {
+        let content = UNMutableNotificationContent()
+        content.title = "Join Request Declined"
+        content.body = reason ?? "Your request to join \(circleName) was not approved"
+        content.sound = .default
+        content.categoryIdentifier = "JOIN_DENIED"
+        content.userInfo = [
+            "type": "join_denied",
+            "circleName": circleName
+        ]
+
+        let request = UNNotificationRequest(
+            identifier: "join_denied_\(Date().timeIntervalSince1970)",
+            content: content,
+            trigger: nil
+        )
+
+        notificationCenter.add(request) { error in
+            if let error = error {
+                logger.error("Failed to send denial notification: \(error.localizedDescription)")
+            }
+        }
+    }
+
     // MARK: - Scheduled Notifications
 
     /// Schedule a reminder for when a member should leave to arrive on time
@@ -467,6 +548,40 @@ class PushNotificationService: ObservableObject {
             options: []
         )
 
+        // Join request categories
+        let approveJoinAction = UNNotificationAction(
+            identifier: "APPROVE_JOIN",
+            title: "Approve",
+            options: [.foreground]
+        )
+
+        let denyJoinAction = UNNotificationAction(
+            identifier: "DENY_JOIN",
+            title: "Deny",
+            options: [.destructive]
+        )
+
+        let joinRequestCategory = UNNotificationCategory(
+            identifier: "JOIN_REQUEST",
+            actions: [approveJoinAction, denyJoinAction],
+            intentIdentifiers: [],
+            options: []
+        )
+
+        let joinApprovedCategory = UNNotificationCategory(
+            identifier: "JOIN_APPROVED",
+            actions: [viewMapAction],
+            intentIdentifiers: [],
+            options: []
+        )
+
+        let joinDeniedCategory = UNNotificationCategory(
+            identifier: "JOIN_DENIED",
+            actions: [dismissAction],
+            intentIdentifiers: [],
+            options: []
+        )
+
         notificationCenter.setNotificationCategories([
             entryCategory,
             exitCategory,
@@ -479,7 +594,10 @@ class PushNotificationService: ObservableObject {
             memberCommuteCategory,
             speedAlertCategory,
             drivingAlertCategory,
-            leaveReminderCategory
+            leaveReminderCategory,
+            joinRequestCategory,
+            joinApprovedCategory,
+            joinDeniedCategory
         ])
     }
 }

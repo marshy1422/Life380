@@ -344,8 +344,12 @@ class SecureInviteService: ObservableObject {
                 "status": "pending"
             ])
 
-        // Notify circle admins
-        // TODO: Send push notification to admins
+        // Notify circle admins via local notification
+        await PushNotificationService.shared.notifyCircleJoinRequest(
+            userName: profile.displayName,
+            userEmail: profile.email,
+            circleName: token.circleName
+        )
     }
 
     private func performJoin(circleId: String, userId: String, tokenId: String) async throws {
@@ -429,6 +433,12 @@ class SecureInviteService: ObservableObject {
                 "reviewedAt": FieldValue.serverTimestamp()
             ])
 
+        // Get circle name for notification
+        let circleName = data["name"] as? String ?? "the circle"
+
+        // Notify the user that their request was approved
+        await PushNotificationService.shared.notifyJoinRequestApproved(circleName: circleName)
+
         inviteLogger.info("Approved join request \(request.id)")
     }
 
@@ -455,6 +465,12 @@ class SecureInviteService: ObservableObject {
                 "reviewedAt": FieldValue.serverTimestamp(),
                 "denialReason": reason ?? ""
             ])
+
+        // Get circle name for notification
+        let circleName = data["name"] as? String ?? "the circle"
+
+        // Notify the user that their request was denied
+        await PushNotificationService.shared.notifyJoinRequestDenied(circleName: circleName, reason: reason)
 
         inviteLogger.info("Denied join request \(request.id)")
     }
