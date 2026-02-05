@@ -149,8 +149,11 @@ class AuthService: NSObject, ObservableObject {
         isLoading = false
     }
 
-    func prepareSignInWithApple() -> String {
-        let nonce = randomNonceString()
+    func prepareSignInWithApple() -> String? {
+        guard let nonce = randomNonceString() else {
+            errorMessage = "Unable to generate secure authentication. Please try again."
+            return nil
+        }
         currentNonce = nonce
         return nonce  // Return RAW nonce - Apple's framework hashes it automatically
     }
@@ -199,7 +202,7 @@ class AuthService: NSObject, ObservableObject {
 
     // MARK: - Helpers
 
-    private func randomNonceString(length: Int = 32) -> String {
+    private func randomNonceString(length: Int = 32) -> String? {
         precondition(length > 0)
         var randomBytes = [UInt8](repeating: 0, count: length)
         let errorCode = SecRandomCopyBytes(kSecRandomDefault, randomBytes.count, &randomBytes)
@@ -208,7 +211,10 @@ class AuthService: NSObject, ObservableObject {
         guard errorCode == errSecSuccess else {
             // This should never happen on iOS, but if it does, we must not proceed
             // with weak random data for security-critical nonce generation
-            fatalError("Failed to generate cryptographically secure random bytes. OSStatus: \(errorCode)")
+            #if DEBUG
+            print("⚠️ AuthService: Failed to generate secure random bytes. OSStatus: \(errorCode)")
+            #endif
+            return nil
         }
 
         let charset: [Character] = Array("0123456789ABCDEFGHIJKLMNOPQRSTUVXYZabcdefghijklmnopqrstuvwxyz-._")

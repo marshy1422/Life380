@@ -166,7 +166,7 @@ struct SignUpView: View {
                 // Sign in with Apple option
                 Section {
                     SignInWithAppleButton(.signUp) { request in
-                        let nonce = authService.prepareSignInWithApple()
+                        guard let nonce = authService.prepareSignInWithApple() else { return }
                         request.requestedScopes = [.fullName, .email]
                         request.nonce = nonce
                     } onCompletion: { result in

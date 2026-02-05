@@ -124,7 +124,7 @@ class AuthViewModel: ObservableObject {
 
     // MARK: - Apple Sign In
 
-    func prepareAppleSignIn() -> String {
+    func prepareAppleSignIn() -> String? {
         authService.prepareSignInWithApple()
     }
 

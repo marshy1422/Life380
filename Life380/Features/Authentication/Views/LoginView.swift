@@ -216,7 +216,7 @@ struct LoginView: View {
 
             // Sign in with Apple
             SignInWithAppleButton(.signIn) { request in
-                let nonce = authService.prepareSignInWithApple()
+                guard let nonce = authService.prepareSignInWithApple() else { return }
                 request.requestedScopes = [.fullName, .email]
                 request.nonce = nonce
             } onCompletion: { result in
