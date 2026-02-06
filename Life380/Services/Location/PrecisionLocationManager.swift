@@ -1627,9 +1627,17 @@ extension PrecisionLocationManager {
 
         // Record for insights
         Task { @MainActor in
+            let visitId = "visit_\(Int(visit.arrivalDate.timeIntervalSince1970))"
             if isArrival {
                 InsightsService.shared.recordPlaceEntry(
-                    placeId: "visit_\(UUID().uuidString)",
+                    placeId: visitId,
+                    placeName: "Visit Location",
+                    coordinate: visit.coordinate
+                )
+            } else {
+                // Departure - record the exit
+                InsightsService.shared.recordPlaceExit(
+                    placeId: visitId,
                     placeName: "Visit Location",
                     coordinate: visit.coordinate
                 )

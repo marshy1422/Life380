@@ -673,4 +673,24 @@ class InsightsService: ObservableObject {
             logger.error("Failed to delete insights: \(error.localizedDescription)")
         }
     }
+
+    // MARK: - App Lifecycle
+
+    /// Save data when app goes to background
+    func saveOnBackground() async {
+        guard isTrackingEnabled else { return }
+
+        logger.info("📊 Saving insights data on background...")
+
+        // Force aggregate and upload any pending data
+        await aggregateAndUpload()
+
+        // Save current summary to local storage as backup
+        if let summary = todaysSummary,
+           let data = try? JSONEncoder().encode(summary) {
+            UserDefaults.standard.set(data, forKey: "insights.todaysSummary")
+        }
+
+        logger.info("📊 Insights data saved")
+    }
 }

@@ -9,6 +9,8 @@ struct Life380App: App {
     @StateObject private var firestoreService = FirestoreService.shared
     @StateObject private var notificationService = NotificationService.shared
     @StateObject private var locationManager = PrecisionLocationManager()  // Shared location manager
+    @StateObject private var insightsService = InsightsService.shared
+    @Environment(\.scenePhase) private var scenePhase
 
     init() {
         FirebaseApp.configure()
@@ -27,6 +29,7 @@ struct Life380App: App {
                 .environmentObject(firestoreService)
                 .environmentObject(notificationService)
                 .environmentObject(locationManager)  // Shared location manager
+                .environmentObject(insightsService)
                 .task {
                     // Request notification permissions and set up categories
                     await setupNotifications()
@@ -34,6 +37,28 @@ struct Life380App: App {
                 .onOpenURL { url in
                     handleDeepLink(url)
                 }
+                .onChange(of: scenePhase) { _, newPhase in
+                    handleScenePhaseChange(newPhase)
+                }
+        }
+    }
+
+    private func handleScenePhaseChange(_ phase: ScenePhase) {
+        switch phase {
+        case .background:
+            // Save insights data when app goes to background
+            Task {
+                await insightsService.saveOnBackground()
+            }
+            // Save location history
+            LocationHistoryService.shared.saveOnBackground()
+        case .active:
+            // Sync geofences when app becomes active
+            if !firestoreService.places.isEmpty {
+                locationManager.syncGeofencesWithPlaces(firestoreService.places)
+            }
+        default:
+            break
         }
     }
 
