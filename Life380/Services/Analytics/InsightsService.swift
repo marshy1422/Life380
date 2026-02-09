@@ -39,10 +39,14 @@ class InsightsService: ObservableObject {
 
     private init() {
         loadTrackingPreference()
-        Task {
-            await loadTodaysSummary()
-            await loadRecentTravelRecords()
-            await loadCommuteStats()
+        // Defer Firestore access to ensure Firebase is configured first
+        // This runs after the app's init() completes
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+            Task {
+                await self?.loadTodaysSummary()
+                await self?.loadRecentTravelRecords()
+                await self?.loadCommuteStats()
+            }
         }
     }
 
